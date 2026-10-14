@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rekap PP & Tracking Pengadaan Barang</title>
+  <title>Rekap PP & Tracking Pengadaan Barang (Pro)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -90,16 +90,43 @@
         transition-duration: 0.01ms !important;
       }
     }
-    button:focus-visible, input:focus-visible {
+    button:focus-visible, input:focus-visible, select:focus-visible {
       outline: 2px solid #a5b4fc;
       outline-offset: 2px;
     }
     .status-line { font-size: 11px; color: #cbd5e1; }
-    .stat-card { background: rgba(15,23,42,.48); border: 1px solid rgba(255,255,255,.10); }
-    .field-error { border-color: #f87171 !important; }
+    .stat-card { background: rgba(15, 23, 42, 0.48); border: 1px solid rgba(255, 255, 255, 0.10); }
+
+    /* Layout Cetak / Print Styles */
+    @media print {
+      body {
+        background: none !important;
+        color: #000 !important;
+      }
+      .glass-card {
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+      }
+      header, .no-print, #toastContainer, #ppModal, #configModal {
+        display: none !important;
+      }
+      table {
+        color: #000 !important;
+        border: 1px solid #ccc !important;
+      }
+      th, td {
+        border: 1px solid #ddd !important;
+        color: #000 !important;
+      }
+    }
   </style>
 </head>
 <body class="p-4 md:p-8">
+
+  <!-- Datalist History Auto-complete -->
+  <datalist id="itemHistoryList"></datalist>
 
   <!-- Container Utama -->
   <div class="max-w-7xl mx-auto space-y-6">
@@ -118,14 +145,24 @@
 
       <!-- Action Buttons Top Header -->
       <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <button onclick="exportCSV()" class="btn-bounce flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-700/80 hover:bg-emerald-600 text-sm font-medium border border-emerald-500/30 shadow-md transition" title="Export data ke CSV">
+          <i data-lucide="download" class="w-4 h-4 text-emerald-200"></i>
+          <span>Export CSV</span>
+        </button>
+
+        <button onclick="window.print()" class="btn-bounce flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-sm font-medium border border-slate-600/50 shadow-md transition" title="Cetak laporan">
+          <i data-lucide="printer" class="w-4 h-4 text-slate-300"></i>
+          <span>Cetak</span>
+        </button>
+
         <button onclick="openConfigModal()" class="btn-bounce flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-sm font-medium border border-slate-600/50 shadow-md transition">
           <i data-lucide="settings" class="w-4 h-4 text-purple-400"></i>
-          <span>Google Sheets API</span>
+          <span>API Sheets</span>
         </button>
 
         <button onclick="fetchFromSheets()" class="btn-bounce flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600/80 hover:bg-blue-500 text-sm font-medium border border-blue-400/30 shadow-md transition">
           <i data-lucide="refresh-cw" class="w-4 h-4 text-white" id="refresh-icon"></i>
-          <span>Sync / Refresh</span>
+          <span>Sync</span>
         </button>
 
         <button onclick="openModal()" class="btn-bounce flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-500 via-purple-600 to-blue-600 hover:opacity-90 text-sm font-semibold shadow-lg text-white transition">
@@ -135,20 +172,21 @@
       </div>
     </header>
 
-    <!-- Ringkasan dan status penyimpanan -->
+    <!-- Ringkasan dan Status Penyimpanan -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-3" aria-label="Ringkasan pengadaan">
       <div class="stat-card rounded-2xl p-4"><p class="text-xs text-slate-400">Total Dokumen PP</p><p id="statPP" class="text-2xl font-bold mt-1">0</p></div>
       <div class="stat-card rounded-2xl p-4"><p class="text-xs text-slate-400">Total Jenis Barang</p><p id="statItems" class="text-2xl font-bold mt-1">0</p></div>
-      <div class="stat-card rounded-2xl p-4"><p class="text-xs text-slate-400">Barang Sudah PO</p><p id="statPO" class="text-2xl font-bold mt-1">0</p></div>
-      <div class="stat-card rounded-2xl p-4"><p class="text-xs text-slate-400">Menunggu PO</p><p id="statPending" class="text-2xl font-bold mt-1">0</p></div>
+      <div class="stat-card rounded-2xl p-4"><p class="text-xs text-slate-400">Barang Completed/PO</p><p id="statPO" class="text-2xl font-bold mt-1">0</p></div>
+      <div class="stat-card rounded-2xl p-4"><p class="text-xs text-slate-400">Menunggu PO / Pending</p><p id="statPending" class="text-2xl font-bold mt-1">0</p></div>
     </section>
+    
     <div class="flex flex-wrap items-center justify-between gap-2 px-1" aria-live="polite">
       <p id="storageStatus" class="status-line">Penyimpanan lokal siap.</p>
       <p id="syncStatus" class="status-line">Google Sheets belum disinkronkan.</p>
     </div>
 
     <!-- Toolbar: Search & View Switcher -->
-    <div class="glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 no-print">
       <!-- Search Input -->
       <div class="relative w-full md:w-96">
         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -157,10 +195,11 @@
 
       <!-- Status Filter & View Toggle -->
       <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
-        <select id="statusFilter" aria-label="Filter status PO" onchange="renderData()" class="glass-input rounded-xl px-3 py-2 text-xs">
-          <option value="all">Semua Status PO</option>
-          <option value="pending">Menunggu PO</option>
-          <option value="complete">Semua Item Sudah PO</option>
+        <select id="statusFilter" aria-label="Filter status pengadaan" onchange="renderData()" class="glass-input rounded-xl px-3 py-2 text-xs">
+          <option value="all">Semua Status</option>
+          <option value="pending">Pending PR/PO</option>
+          <option value="po_issued">PO Issued / Partial</option>
+          <option value="completed">Completed / Received</option>
         </select>
         <span class="text-xs text-slate-400 font-medium hidden sm:inline">Tampilan:</span>
         <div class="bg-slate-900/60 p-1 rounded-xl border border-slate-700/50 flex space-x-1">
@@ -288,9 +327,10 @@
     let ppData = JSON.parse(localStorage.getItem('rekap_pp_db')) || [];
     let currentViewMode = 'grouped'; // 'grouped' atau 'flat'
     let isSyncing = false;
+    let lastSyncedAt = localStorage.getItem('rekap_pp_last_sync') || null;
     const DRAFT_KEY = 'rekap_pp_draft_v1';
 
-    // Normalisasi data lama agar pencarian/render tidak gagal pada kolom kosong.
+    // Normalisasi data untuk memastikan kompatibilitas format & tipe data
     function normalizeRecords(records) {
       if (!Array.isArray(records)) throw new Error('Format data harus berupa daftar PP.');
       return records.map((pp, idx) => {
@@ -299,18 +339,37 @@
         return {
           no_pp: String(pp.no_pp ?? '').trim(),
           tgl_pp: String(pp.tgl_pp ?? ''),
-          items: items.map(itm => ({
-            kode_barang: String(itm?.kode_barang ?? ''),
-            nama_barang: String(itm?.nama_barang ?? ''),
-            qty_pp: Math.max(0, Number(itm?.qty_pp) || 0),
-            no_pr: String(itm?.no_pr ?? ''),
-            no_po: String(itm?.no_po ?? ''),
-            qty_po: Math.max(0, Number(itm?.qty_po) || 0)
-          }))
+          items: items.map(itm => {
+            const qty_pp = Math.max(0, Number(itm?.qty_pp) || 0);
+            const qty_po = Math.max(0, Number(itm?.qty_po) || 0);
+            const no_pr = String(itm?.no_pr ?? '').trim();
+            const no_po = String(itm?.no_po ?? '').trim();
+            
+            // Hitung status item otomatis jika tidak diset
+            let status = itm?.status || 'Pending PR';
+            if (status === 'Pending PR' || !itm?.status) {
+              if (qty_po >= qty_pp && qty_pp > 0 && no_po) status = 'Completed';
+              else if (qty_po > 0 && qty_po < qty_pp) status = 'Partial Delivered';
+              else if (no_po) status = 'PO Issued';
+              else if (no_pr) status = 'PR Issued';
+              else status = 'Pending PR';
+            }
+
+            return {
+              kode_barang: String(itm?.kode_barang ?? ''),
+              nama_barang: String(itm?.nama_barang ?? ''),
+              qty_pp: qty_pp,
+              no_pr: no_pr,
+              no_po: no_po,
+              qty_po: qty_po,
+              status: status
+            };
+          })
         };
       });
     }
 
+    // Fungsi Sanitasi Output HTML
     function escapeHTML(value) {
       return String(value ?? '').replace(/[&<>"']/g, ch => ({
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
@@ -321,23 +380,44 @@
       const el = document.getElementById('storageStatus');
       if (el) el.textContent = message;
     }
+    
     function setSyncStatus(message) {
       const el = document.getElementById('syncStatus');
-      if (el) el.textContent = message;
+      if (el) {
+        let fullMsg = message;
+        if (lastSyncedAt) fullMsg += ` (Terakhir Sync: ${new Date(lastSyncedAt).toLocaleTimeString('id-ID')})`;
+        el.textContent = fullMsg;
+      }
     }
 
     function updateStats() {
       const allItems = ppData.reduce((sum, pp) => sum + (Array.isArray(pp.items) ? pp.items.length : 0), 0);
-      const issued = ppData.reduce((sum, pp) => sum + (pp.items || []).filter(i => String(i.no_po || '').trim()).length, 0);
+      const completedOrPO = ppData.reduce((sum, pp) => sum + (pp.items || []).filter(i => String(i.no_po || '').trim()).length, 0);
       document.getElementById('statPP').textContent = ppData.length;
       document.getElementById('statItems').textContent = allItems;
-      document.getElementById('statPO').textContent = issued;
-      document.getElementById('statPending').textContent = Math.max(0, allItems - issued);
+      document.getElementById('statPO').textContent = completedOrPO;
+      document.getElementById('statPending').textContent = Math.max(0, allItems - completedOrPO);
+
+      // Refresh Datalist Item History
+      updateItemHistoryDatalist();
     }
 
+    function updateItemHistoryDatalist() {
+      const datalist = document.getElementById('itemHistoryList');
+      if (!datalist) return;
+      const names = new Set();
+      ppData.forEach(pp => {
+        (pp.items || []).forEach(i => {
+          if (i.nama_barang) names.add(i.nama_barang);
+        });
+      });
+      datalist.innerHTML = Array.from(names).map(n => `<option value="${escapeHTML(n)}">`).join('');
+    }
+
+    // Fitur Draft Otomatis
     function saveDraft() {
       try {
-        const form = document.getElementById('ppForm');
+        if (document.getElementById('ppModal').classList.contains('hidden')) return;
         const draft = {
           no_pp: document.getElementById('no_pp').value,
           tgl_pp: document.getElementById('tgl_pp').value,
@@ -347,15 +427,15 @@
             qty_pp: row.querySelector('[name="qty_pp"]').value,
             no_pr: row.querySelector('[name="no_pr"]').value,
             no_po: row.querySelector('[name="no_po"]').value,
-            qty_po: row.querySelector('[name="qty_po"]').value
+            qty_po: row.querySelector('[name="qty_po"]').value,
+            status: row.querySelector('[name="status"]')?.value || 'Pending PR'
           })),
           savedAt: new Date().toISOString()
         };
-        if (document.getElementById('ppModal').classList.contains('hidden')) return;
         localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-        setStorageStatus('Draft formulir tersimpan otomatis di perangkat ini.');
+        setStorageStatus('Draft formulir tersimpan otomatis.');
       } catch (err) {
-        setStorageStatus('Autosave draft tidak tersedia di browser ini.');
+        setStorageStatus('Autosave draft tidak tersedia.');
       }
     }
 
@@ -365,7 +445,7 @@
         if (!raw) return;
         const draft = JSON.parse(raw);
         if (!draft || !Array.isArray(draft.items) || !draft.items.length) return;
-        if (confirm('Ditemukan draft PP yang belum selesai. Pulihkan draft tersebut?')) {
+        if (confirm('Ditemukan draft PP yang belum selesai disimpan. Pulihkan draft tersebut?')) {
           document.getElementById('no_pp').value = draft.no_pp || '';
           document.getElementById('tgl_pp').value = draft.tgl_pp || '';
           const container = document.getElementById('itemRowsContainer');
@@ -379,24 +459,28 @@
       } catch (err) { localStorage.removeItem(DRAFT_KEY); }
     }
 
-    // Init Lucide Icons & Initial Load
+    // Inisialisasi Aplikasi
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       document.getElementById('scriptUrlInput').value = scriptUrl;
-      updateStats();
       
+      try { ppData = normalizeRecords(ppData); } catch (_) { ppData = []; }
+      updateStats();
+      setSyncStatus(scriptUrl ? 'Siap melakukan sinkronisasi.' : 'Google Sheets belum dikonfigurasi.');
+
       document.getElementById('ppForm').addEventListener('input', saveDraft);
       document.getElementById('itemRowsContainer').addEventListener('input', saveDraft);
+      
       if (scriptUrl) {
         fetchFromSheets();
       } else {
         renderData();
-        showNotification("Masukkan Web App URL Google Sheets Anda pada tombol 'Google Sheets API'", "info");
+        showNotification("Masukkan Web App URL Google Sheets Anda pada 'API Sheets'", "info");
       }
       restoreDraftIfAvailable();
     });
 
-    // Handle View Mode Toggle
+    // Toggle Tampilan
     function setViewMode(mode) {
       currentViewMode = mode;
       const gBtn = document.getElementById('viewGroupedBtn');
@@ -419,7 +503,7 @@
       document.getElementById('modalTitle').textContent = "Input Permintaan Pembelian (PP)";
       document.getElementById('tgl_pp').valueAsDate = new Date();
       document.getElementById('itemRowsContainer').innerHTML = "";
-      addItemRow(); // Minimal 1 row barang
+      addItemRow();
       
       const modal = document.getElementById('ppModal');
       modal.classList.remove('hidden');
@@ -447,7 +531,7 @@
           showNotification('URL tidak valid.', 'error'); return;
         }
         if (parsed.protocol !== 'https:' || !parsed.hostname.endsWith('google.com') || !parsed.pathname.includes('/macros/s/')) {
-          showNotification('Gunakan URL Web App Google Apps Script resmi (https://script.google.com/macros/s/.../exec).', 'error');
+          showNotification('Gunakan URL Web App Google Apps Script resmi.', 'error');
           return;
         }
       }
@@ -458,7 +542,7 @@
       if (url) fetchFromSheets();
     }
 
-    // Dynamic Row Barang Generator
+    // Dynamic Row Barang Generator (dengan Duplikasi)
     function addItemRow(data = {}) {
       const container = document.getElementById('itemRowsContainer');
       const rowIndex = container.children.length;
@@ -467,14 +551,21 @@
       row.className = "p-4 rounded-xl glass-card bg-slate-900/60 border border-slate-700/60 space-y-3 relative group";
       row.setAttribute('data-row-index', rowIndex);
 
+      const statusVal = data.status || 'Pending PR';
+
       row.innerHTML = `
         <div class="flex justify-between items-center border-b border-slate-700/50 pb-2">
           <span class="text-xs font-semibold text-purple-300">Barang #${rowIndex + 1}</span>
-          ${rowIndex > 0 ? `
-            <button type="button" onclick="this.closest('[data-row-index]').remove(); reindexRows();" class="text-red-400 hover:text-red-300 transition text-xs flex items-center gap-1">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus Baris
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="duplicateRow(this)" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1 bg-indigo-950/40 px-2 py-1 rounded border border-indigo-500/20">
+              <i data-lucide="copy" class="w-3 h-3"></i> Duplikat
             </button>
-          ` : ''}
+            ${rowIndex > 0 ? `
+              <button type="button" onclick="removeRowConfirm(this)" class="text-red-400 hover:text-red-300 transition text-xs flex items-center gap-1 bg-red-950/40 px-2 py-1 rounded border border-red-500/20">
+                <i data-lucide="trash-2" class="w-3 h-3"></i> Hapus
+              </button>
+            ` : ''}
+          </div>
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -484,7 +575,7 @@
           </div>
           <div class="sm:col-span-2">
             <label class="block text-[11px] font-medium text-slate-300 mb-1">Nama Barang <span class="text-red-400">*</span></label>
-            <input type="text" name="nama_barang" required value="${escapeHTML(data.nama_barang || '')}" placeholder="Nama deskripsi barang..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
+            <input type="text" name="nama_barang" list="itemHistoryList" required value="${escapeHTML(data.nama_barang || '')}" placeholder="Ketik atau pilih nama barang..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
           </div>
           <div>
             <label class="block text-[11px] font-medium text-slate-300 mb-1">Qty PP <span class="text-red-400">*</span></label>
@@ -492,7 +583,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
           <div>
             <label class="block text-[11px] font-medium text-slate-400 mb-1">No. PR (Opsional)</label>
             <input type="text" name="no_pr" value="${escapeHTML(data.no_pr || '')}" placeholder="PR-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
@@ -505,11 +596,45 @@
             <label class="block text-[11px] font-medium text-slate-400 mb-1">Qty PO</label>
             <input type="number" name="qty_po" min="0" value="${escapeHTML(data.qty_po || 0)}" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
           </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Status Item Lifecycle</label>
+            <select name="status" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
+              <option value="Pending PR" ${statusVal === 'Pending PR' ? 'selected' : ''}>Pending PR</option>
+              <option value="PR Issued" ${statusVal === 'PR Issued' ? 'selected' : ''}>PR Issued</option>
+              <option value="PO Issued" ${statusVal === 'PO Issued' ? 'selected' : ''}>PO Issued</option>
+              <option value="Partial Delivered" ${statusVal === 'Partial Delivered' ? 'selected' : ''}>Partial Delivered</option>
+              <option value="Completed" ${statusVal === 'Completed' ? 'selected' : ''}>Completed / Received</option>
+            </select>
+          </div>
         </div>
       `;
 
       container.appendChild(row);
       lucide.createIcons();
+    }
+
+    function duplicateRow(btn) {
+      const row = btn.closest('[data-row-index]');
+      const data = {
+        kode_barang: row.querySelector('[name="kode_barang"]').value,
+        nama_barang: row.querySelector('[name="nama_barang"]').value,
+        qty_pp: row.querySelector('[name="qty_pp"]').value,
+        no_pr: row.querySelector('[name="no_pr"]').value,
+        no_po: row.querySelector('[name="no_po"]').value,
+        qty_po: row.querySelector('[name="qty_po"]').value,
+        status: row.querySelector('[name="status"]').value,
+      };
+      addItemRow(data);
+      saveDraft();
+      showNotification("Baris barang berhasil diduplikat.", "info");
+    }
+
+    function removeRowConfirm(btn) {
+      if (confirm("Hapus baris barang ini dari formulir?")) {
+        btn.closest('[data-row-index]').remove();
+        reindexRows();
+        saveDraft();
+      }
     }
 
     function reindexRows() {
@@ -521,7 +646,7 @@
       });
     }
 
-    // Submit Form (Save Local & Sync to Sheets)
+    // Submit Form
     async function handleFormSubmit(e) {
       e.preventDefault();
       const editIndex = parseInt(document.getElementById('editIndex').value);
@@ -540,6 +665,7 @@
           no_pr: row.querySelector('[name="no_pr"]').value.trim(),
           no_po: row.querySelector('[name="no_po"]').value.trim(),
           qty_po: parseFloat(row.querySelector('[name="qty_po"]').value) || 0,
+          status: row.querySelector('[name="status"]').value
         });
       });
 
@@ -551,9 +677,10 @@
         showNotification('Periksa nama barang dan jumlah Qty PP/PO. Qty PP minimal 1 dan Qty PO tidak boleh negatif.', 'error');
         return;
       }
+
       const duplicate = ppData.some((pp, idx) => idx !== editIndex && pp.no_pp.trim().toLowerCase() === no_pp.toLowerCase());
       if (duplicate) {
-        showNotification('Nomor PP sudah digunakan. Gunakan nomor PP yang berbeda.', 'error');
+        showNotification('Nomor PP sudah digunakan.', 'error');
         document.getElementById('no_pp').focus();
         return;
       }
@@ -570,7 +697,7 @@
       try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
       renderData();
       closeModal();
-      showNotification("Data berhasil disimpan di perangkat ini.", "success");
+      showNotification("Data berhasil disimpan secara lokal.", "success");
       setStorageStatus('Data lokal tersimpan.');
 
       if (scriptUrl) {
@@ -615,11 +742,50 @@
       }
     }
 
+    // Export Data Ke CSV (Flat Item Format)
+    function exportCSV() {
+      if (!ppData.length) {
+        showNotification("Tidak ada data untuk diexport.", "error");
+        return;
+      }
+
+      let csv = "No PP,Tanggal PP,Kode Barang,Nama Barang,Qty PP,No PR,No PO,Qty PO,Qty Outstanding,Status\n";
+
+      ppData.forEach(pp => {
+        (pp.items || []).forEach(i => {
+          const outstanding = Math.max(0, i.qty_pp - i.qty_po);
+          const row = [
+            `"${pp.no_pp}"`,
+            `"${pp.tgl_pp}"`,
+            `"${i.kode_barang || ''}"`,
+            `"${i.nama_barang || ''}"`,
+            i.qty_pp,
+            `"${i.no_pr || ''}"`,
+            `"${i.no_po || ''}"`,
+            i.qty_po,
+            outstanding,
+            `"${i.status || ''}"`
+          ];
+          csv += row.join(",") + "\n";
+        });
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Rekap_PP_Pengadaan_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showNotification("File CSV berhasil diunduh!", "success");
+    }
+
     // Render Data Table
     function renderData() {
       const container = document.getElementById('tableContainer');
       const query = document.getElementById('searchInput').value.toLowerCase().trim();
-      const status = document.getElementById('statusFilter')?.value || 'all';
+      const statusFilter = document.getElementById('statusFilter')?.value || 'all';
       updateStats();
 
       const filtered = ppData.filter(pp => {
@@ -631,8 +797,16 @@
           String(i.no_pr || '').toLowerCase().includes(query) ||
           String(i.no_po || '').toLowerCase().includes(query)
         );
-        const hasPO = items.length > 0 && items.every(i => String(i.no_po || '').trim());
-        const statusMatch = status === 'all' || (status === 'complete' ? hasPO : !hasPO);
+        
+        let statusMatch = true;
+        if (statusFilter === 'pending') {
+          statusMatch = items.some(i => i.status === 'Pending PR' || i.status === 'PR Issued');
+        } else if (statusFilter === 'po_issued') {
+          statusMatch = items.some(i => i.status === 'PO Issued' || i.status === 'Partial Delivered');
+        } else if (statusFilter === 'completed') {
+          statusMatch = items.length > 0 && items.every(i => i.status === 'Completed' || i.no_po);
+        }
+
         return (matchHeader || matchItem) && statusMatch;
       });
 
@@ -646,9 +820,26 @@
         lucide.createIcons();
         return;
       }
+
       if (currentViewMode === 'grouped') renderGroupedView(container, filtered);
       else renderFlatView(container, filtered);
       lucide.createIcons();
+    }
+
+    function getStatusBadge(status, hasPO) {
+      const st = status || (hasPO ? 'PO Issued' : 'Pending PR');
+      switch(st) {
+        case 'Completed':
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Completed</span>`;
+        case 'Partial Delivered':
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Partial Order</span>`;
+        case 'PO Issued':
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">PO Issued</span>`;
+        case 'PR Issued':
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">PR Issued</span>`;
+        default:
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-700 text-slate-300">Pending PR</span>`;
+      }
     }
 
     // Tampilan Grouped (Per No PP)
@@ -660,8 +851,8 @@
               <th class="py-3.5 px-4">No. PP</th>
               <th class="py-3.5 px-4">Tanggal PP</th>
               <th class="py-3.5 px-4">Jumlah Barang</th>
-              <th class="py-3.5 px-4">Status PO</th>
-              <th class="py-3.5 px-4 text-right">Aksi</th>
+              <th class="py-3.5 px-4">Progres PO</th>
+              <th class="py-3.5 px-4 text-right no-print">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
@@ -682,10 +873,10 @@
             <td class="py-3.5 px-4 text-slate-300 font-medium">${totalItems} Item</td>
             <td class="py-3.5 px-4">
               <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold ${isComplete ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
-                ${totalPO} / ${totalItems} Issued
+                ${totalPO} / ${totalItems} PO Ready
               </span>
             </td>
-            <td class="py-3.5 px-4 text-right space-x-2">
+            <td class="py-3.5 px-4 text-right space-x-2 no-print">
               <button onclick="editPP(${idx})" class="p-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 transition" title="Edit PP">
                 <i data-lucide="edit-3" class="w-4 h-4"></i>
               </button>
@@ -698,19 +889,23 @@
           <tr class="bg-slate-950/40">
             <td colspan="5" class="px-6 py-3">
               <div class="border-l-2 border-purple-500/40 pl-4 space-y-2">
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rincian Barang:</p>
+                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rincian Barang & Outstanding:</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  ${pp.items.map(itm => `
+                  ${pp.items.map(itm => {
+                    const outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
+                    return `
                     <div class="p-2.5 rounded-lg bg-slate-900/60 border border-white/5 flex justify-between items-center text-xs">
                       <div>
                         <p class="font-medium text-slate-200">${escapeHTML(itm.nama_barang)} <span class="text-slate-400">(${escapeHTML(itm.kode_barang || '-')})</span></p>
-                        <p class="text-[10px] text-slate-400 mt-0.5">Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR:${escapeHTML(itm.no_pr || '-')} | PO: ${escapeHTML(itm.no_po || '-')} (${itm.qty_po || 0})</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">
+                          Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR: ${escapeHTML(itm.no_pr \vert{}\vert{} '-')} \vert{} PO:${escapeHTML(itm.no_po || '-')} (${itm.qty_po \vert{}\vert{} 0})${outstanding > 0 ? `<span class="text-amber-400 font-semibold ml-1">| Sisa: ${outstanding}</span>` : ''}
+                        </p>
                       </div>
-                      <span class="text-[10px] font-semibold px-2 py-0.5 rounded ${itm.no_po ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-700 text-slate-400'}">
-                        ${itm.no_po ? 'PO Ready' : 'Pending'}
-                      </span>
+                      <div>
+                        ${getStatusBadge(itm.status, !!itm.no_po)}
+                      </div>
                     </div>
-                  `).join('')}
+                  `}).join('')}
                 </div>
               </div>
             </td>
@@ -736,6 +931,8 @@
               <th class="py-3.5 px-3">No. PR</th>
               <th class="py-3.5 px-3">No. PO</th>
               <th class="py-3.5 px-3">Qty PO</th>
+              <th class="py-3.5 px-3">Outstanding</th>
+              <th class="py-3.5 px-3">Status</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
@@ -743,6 +940,7 @@
 
       data.forEach(pp => {
         pp.items.forEach(itm => {
+          const outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
           html += `
             <tr class="hover:bg-white/5 transition">
               <td class="py-3 px-3 font-semibold text-purple-300">${escapeHTML(pp.no_pp)}</td>
@@ -753,6 +951,8 @@
               <td class="py-3 px-3 text-slate-300">${escapeHTML(itm.no_pr || '-')}</td>
               <td class="py-3 px-3 text-slate-300">${escapeHTML(itm.no_po || '-')}</td>
               <td class="py-3 px-3 font-bold text-emerald-400">${itm.qty_po || 0}</td>
+              <td class="py-3 px-3 font-semibold ${outstanding > 0 ? 'text-amber-400' : 'text-slate-500'}">${outstanding}</td>
+              <td class="py-3 px-3">${getStatusBadge(itm.status, !!itm.no_po)}</td>
             </tr>
           `;
         });
@@ -762,7 +962,7 @@
       container.innerHTML = html;
     }
 
-    // Sync API Google Sheets Functions
+    // Integrasi Google Sheets API
     async function fetchFromSheets() {
       if (!scriptUrl) return;
       const icon = document.getElementById('refresh-icon');
@@ -779,6 +979,8 @@
 
         if (result.status === 'success') {
           ppData = normalizeRecords(result.records);
+          lastSyncedAt = new Date().toISOString();
+          localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
           saveLocalData();
           renderData();
           setSyncStatus('Data berhasil dimuat dari Google Sheets.');
@@ -786,8 +988,8 @@
         }
       } catch (err) {
         console.error(err);
-        setSyncStatus('Gagal memuat Google Sheets: ' + (err.message || 'periksa koneksi/URL.'));
-        showNotification("Gagal mengambil data: " + (err.message || 'periksa koneksi dan URL.'), "error");
+        setSyncStatus('Gagal memuat Google Sheets: ' + (err.message || 'periksa koneksi.'));
+        showNotification("Gagal mengambil data: " + (err.message || 'periksa koneksi.'), "error");
       } finally {
         if (icon) icon.classList.remove('animate-spin');
       }
@@ -812,13 +1014,14 @@
             records: ppData
           })
         });
-        // mode no-cors menghasilkan opaque response: pengiriman tidak dapat diverifikasi dari browser.
-        setSyncStatus('Permintaan sync dikirim; hasil penyimpanan belum dapat diverifikasi. Tekan Sync / Refresh untuk memeriksa data.');
-        showNotification("Permintaan sinkronisasi dikirim. Verifikasi dengan Sync / Refresh.", "info");
+        lastSyncedAt = new Date().toISOString();
+        localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
+        setSyncStatus('Data dikirim ke Sheets. Klik Sync untuk verifikasi.');
+        showNotification("Permintaan sinkronisasi dikirim.", "info");
       } catch (err) {
         console.error(err);
         setSyncStatus('Sinkronisasi gagal: ' + (err.message || 'periksa koneksi.'));
-        showNotification("Gagal sinkronisasi ke Sheets: " + (err.message || 'periksa koneksi.'), "error");
+        showNotification("Gagal sinkronisasi ke Sheets.", "error");
       } finally {
         isSyncing = false;
       }
@@ -827,14 +1030,14 @@
     function saveLocalData() {
       try {
         localStorage.setItem('rekap_pp_db', JSON.stringify(ppData));
-        setStorageStatus('Data lokal tersimpan di browser ini.');
+        setStorageStatus('Data lokal tersimpan.');
       } catch (err) {
-        setStorageStatus('Penyimpanan lokal gagal. Ekspor/cadangkan data sebelum menutup halaman.');
-        showNotification('Penyimpanan lokal gagal: ruang penyimpanan mungkin penuh atau diblokir.', 'error');
+        setStorageStatus('Penyimpanan lokal gagal.');
+        showNotification('Penyimpanan lokal gagal: memori penuh/diblokir.', 'error');
       }
     }
 
-    // Custom Toast Notification System
+    // System Toast Notification
     function showNotification(message, type = "info") {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -861,6 +1064,62 @@
         setTimeout(() => toast.remove(), 300);
       }, 4000);
     }
+    (function () {
+    'use null';
+
+    // 1. Matikan Klik Kanan (Context Menu)
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      showNotification('Klik kanan dinonaktifkan untuk keamanan data.', 'error');
+    });
+
+    // 2. Blokir Kombinasi Tombol Keyboard / Shortcut DevTools
+    document.addEventListener('keydown', function (e) {
+      // F12
+      if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        showNotification('Inspect element (F12) diblokir.', 'error');
+        return false;
+      }
+
+      // Ctrl+Shift+I (Inspect), Ctrl+Shift+J (Console), Ctrl+Shift+C (Element Picker)
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+        e.preventDefault();
+        showNotification('Akses Developer Tools diblokir.', 'error');
+        return false;
+      }
+
+      // Ctrl+U (View Page Source)
+      if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+        e.preventDefault();
+        showNotification('Melihat Source Code diblokir.', 'error');
+        return false;
+      }
+
+      // Cmd+Option+I (Mac DevTools)
+      if (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // 3. Trap Debugger Loop (Menghentikan/Freeze eksekusi jika DevTools berhasil dibuka)
+    setInterval(function () {
+      const startTime = performance.now();
+      (function () {}.constructor('debugger')());
+      const endTime = performance.now();
+      
+      // Jika DevTools terbuka, debugger akan menyebabkan jeda eksekusi
+      if (endTime - startTime > 100) {
+        document.body.innerHTML = `
+          <div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#0f051d; color:#f87171; font-family:sans-serif; text-align:center; padding:20px;">
+            <h1 style="font-size:2rem; font-weight:bold; margin-bottom:10px;">Akses Ditolak</h1>
+            <p style="color:#cbd5e1; font-size:0.9rem;">Sistem mendeteksi penggunaan Developer Tools. Tutup DevTools dan muat ulang halaman.</p>
+          </div>
+        `;
+      }
+    }, 1000);
+  })();
   </script>
 </body>
 </html>
