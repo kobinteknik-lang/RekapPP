@@ -1066,6 +1066,60 @@
         setTimeout(() => toast.remove(), 300);
       }, 4000);
     }
+    // 1. Blokir Klik Kanan (Context Menu)
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// 2. Blokir Tombol Shortcut Keyboard
+document.addEventListener('keydown', (e) => {
+  const key = e.key.toLowerCase();
+
+  // Blokir F12
+  if (e.key === 'F12') {
+    e.preventDefault();
+    return false;
+  }
+
+  // Blokir Ctrl+I (serta Ctrl+Shift+I)
+  if (e.ctrlKey && key === 'i') {
+    e.preventDefault();
+    return false;
+  }
+
+  // Blokir Ctrl+Shift+J, Ctrl+Shift+C (Console / Inspect)
+  if (e.ctrlKey && e.shiftKey && (key === 'j' || key === 'c')) {
+    e.preventDefault();
+    return false;
+  }
+
+  // Blokir Ctrl+U (View Source)
+  if (e.ctrlKey && key === 'u') {
+    e.preventDefault();
+    return false;
+  }
+
+  // Blokir Ctrl+S (Save Page)
+  if (e.ctrlKey && key === 's') {
+    e.preventDefault();
+    return false;
+  }
+});
+
+// 3. Deteksi Pembukaan DevTools (Debugger Loop / Infinite Pause)
+// Jika pengguna membuka DevTools melalui Menu Browser (Tiga Titik -> More Tools -> Developer Tools)
+setInterval(() => {
+  const startTime = performance.now();
+  (function() {}.constructor("debugger")());
+  const endTime = performance.now();
+  
+  // Jika selisih waktu > 100ms, berarti debugger aktif (DevTools terbuka)
+  if (endTime - startTime > 100) {
+    document.body.innerHTML = `
+      <div style="background:#0f172a; color:#f8fafc; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif;">
+        <h1 style="font-size:24px; color:#f87171; margin-bottom:12px;">Akses Ditolak</h1>
+        <p style="font-size:14px; color:#94a3b8;">Developer Tools terdeteksi. Silakan tutup Developer Tools untuk melanjutkan.</p>
+      </div>`;
+  }
+}, 1000);
     // Catatan: proteksi klik kanan/DevTools di sisi browser dihilangkan.
     // Proteksi seperti itu tidak mengamankan data dan dapat membuat aplikasi macet.
 
