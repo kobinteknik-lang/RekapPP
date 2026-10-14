@@ -323,8 +323,10 @@
   <!-- JavaScript Logika Aplikasi -->
   <script>
     // Config & Storage State
-    let scriptUrl = localStorage.getItem('google_script_url') || '';
-    let ppData = JSON.parse(localStorage.getItem('rekap_pp_db')) || [];
+    let scriptUrl = localStorage.getItem('google_script_url') || 'https://script.google.com/macros/s/AKfycbw6sBj-fTwiUgujizXeerMQUMEAa3EdDj4XhMME7dZ10EmUwP6IbCrcQMT0OomqNkbg1A/exec';
+    let ppData = [];
+    try { ppData = normalizeRecords(JSON.parse(localStorage.getItem('rekap_pp_db') || '[]')); }
+    catch (err) { console.warn('Data lokal tidak valid; memulai dengan data kosong.', err); ppData = []; }
     let currentViewMode = 'grouped'; // 'grouped' atau 'flat'
     let isSyncing = false;
     let lastSyncedAt = localStorage.getItem('rekap_pp_last_sync') || null;
@@ -898,7 +900,7 @@
                       <div>
                         <p class="font-medium text-slate-200">${escapeHTML(itm.nama_barang)} <span class="text-slate-400">(${escapeHTML(itm.kode_barang || '-')})</span></p>
                         <p class="text-[10px] text-slate-400 mt-0.5">
-                          Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR: ${escapeHTML(itm.no_pr \vert{}\vert{} '-')} \vert{} PO:${escapeHTML(itm.no_po || '-')} (${itm.qty_po \vert{}\vert{} 0})${outstanding > 0 ? `<span class="text-amber-400 font-semibold ml-1">| Sisa: ${outstanding}</span>` : ''}
+                          Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR: ${escapeHTML(itm.no_pr || '-')} || PO:${escapeHTML(itm.no_po || '-')} (${itm.qty_po || 0})${outstanding > 0 ? `<span class="text-amber-400 font-semibold ml-1">| Sisa: ${outstanding}</span>` : ''}
                         </p>
                       </div>
                       <div>
@@ -1008,7 +1010,7 @@
         await fetch(scriptUrl, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'sync_all',
             records: ppData
@@ -1064,62 +1066,9 @@
         setTimeout(() => toast.remove(), 300);
       }, 4000);
     }
-    (function () {
-    'use null';
+    // Catatan: proteksi klik kanan/DevTools di sisi browser dihilangkan.
+    // Proteksi seperti itu tidak mengamankan data dan dapat membuat aplikasi macet.
 
-    // 1. Matikan Klik Kanan (Context Menu)
-    document.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-      showNotification('Klik kanan dinonaktifkan untuk keamanan data.', 'error');
-    });
-
-    // 2. Blokir Kombinasi Tombol Keyboard / Shortcut DevTools
-    document.addEventListener('keydown', function (e) {
-      // F12
-      if (e.key === 'F12' || e.keyCode === 123) {
-        e.preventDefault();
-        showNotification('Inspect element (F12) diblokir.', 'error');
-        return false;
-      }
-
-      // Ctrl+Shift+I (Inspect), Ctrl+Shift+J (Console), Ctrl+Shift+C (Element Picker)
-      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
-        e.preventDefault();
-        showNotification('Akses Developer Tools diblokir.', 'error');
-        return false;
-      }
-
-      // Ctrl+U (View Page Source)
-      if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
-        e.preventDefault();
-        showNotification('Melihat Source Code diblokir.', 'error');
-        return false;
-      }
-
-      // Cmd+Option+I (Mac DevTools)
-      if (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i')) {
-        e.preventDefault();
-        return false;
-      }
-    });
-
-    // 3. Trap Debugger Loop (Menghentikan/Freeze eksekusi jika DevTools berhasil dibuka)
-    setInterval(function () {
-      const startTime = performance.now();
-      (function () {}.constructor('debugger')());
-      const endTime = performance.now();
-      
-      // Jika DevTools terbuka, debugger akan menyebabkan jeda eksekusi
-      if (endTime - startTime > 100) {
-        document.body.innerHTML = `
-          <div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#0f051d; color:#f87171; font-family:sans-serif; text-align:center; padding:20px;">
-            <h1 style="font-size:2rem; font-weight:bold; margin-bottom:10px;">Akses Ditolak</h1>
-            <p style="color:#cbd5e1; font-size:0.9rem;">Sistem mendeteksi penggunaan Developer Tools. Tutup DevTools dan muat ulang halaman.</p>
-          </div>
-        `;
-      }
-    }, 1000);
-  })();
   </script>
 </body>
 </html>
