@@ -129,7 +129,7 @@
   <datalist id="itemHistoryList"></datalist>
 
   <!-- Container Utama -->
-  <div class="max-w-7xl mx-auto space-y-6">
+  <div class="max-w-[1400px] mx-auto space-y-6">
 
     <!-- Header Section -->
     <header class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -226,7 +226,7 @@
 
   <!-- Modal Form Input PP Multi-Item -->
   <div id="ppModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden transition-opacity duration-300">
-    <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
+    <div class="glass-card rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
       
       <!-- Modal Header -->
       <div class="p-6 border-b border-white/10 flex justify-between items-center bg-slate-900/40">
@@ -246,8 +246,8 @@
         <!-- Header Info PP -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/30 p-4 rounded-xl border border-slate-800">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Nomor PP <span class="text-red-400">*</span></label>
-            <input type="text" id="no_pp" required placeholder="Contoh: PP/2026/001" class="w-full glass-input px-3.5 py-2 rounded-xl text-sm">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nomor PP (Kosongkan utk Auto-urut)</label>
+            <input type="text" id="no_pp" placeholder="Contoh: PP/2026/001" class="w-full glass-input px-3.5 py-2 rounded-xl text-sm">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1">Tanggal PP <span class="text-red-400">*</span></label>
@@ -345,7 +345,9 @@
             const qty_pp = Math.max(0, Number(itm?.qty_pp) || 0);
             const qty_po = Math.max(0, Number(itm?.qty_po) || 0);
             const no_pr = String(itm?.no_pr ?? '').trim();
+            const tgl_pr = String(itm?.tgl_pr ?? '').trim();
             const no_po = String(itm?.no_po ?? '').trim();
+            const tgl_po = String(itm?.tgl_po ?? '').trim();
             
             // Hitung status item otomatis jika tidak diset
             let status = itm?.status || 'Pending PR';
@@ -362,7 +364,9 @@
               nama_barang: String(itm?.nama_barang ?? ''),
               qty_pp: qty_pp,
               no_pr: no_pr,
+              tgl_pr: tgl_pr,
               no_po: no_po,
+              tgl_po: tgl_po,
               qty_po: qty_po,
               status: status
             };
@@ -428,7 +432,9 @@
             nama_barang: row.querySelector('[name="nama_barang"]').value,
             qty_pp: row.querySelector('[name="qty_pp"]').value,
             no_pr: row.querySelector('[name="no_pr"]').value,
+            tgl_pr: row.querySelector('[name="tgl_pr"]').value,
             no_po: row.querySelector('[name="no_po"]').value,
+            tgl_po: row.querySelector('[name="tgl_po"]').value,
             qty_po: row.querySelector('[name="qty_po"]').value,
             status: row.querySelector('[name="status"]')?.value || 'Pending PR'
           })),
@@ -585,21 +591,29 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-3 pt-1">
           <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">No. PR (Opsional)</label>
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">No. PR</label>
             <input type="text" name="no_pr" value="${escapeHTML(data.no_pr || '')}" placeholder="PR-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
           </div>
           <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">No. PO (Opsional)</label>
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal PR</label>
+            <input type="date" name="tgl_pr" value="${escapeHTML(data.tgl_pr || '')}" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">No. PO</label>
             <input type="text" name="no_po" value="${escapeHTML(data.no_po || '')}" placeholder="PO-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal PO</label>
+            <input type="date" name="tgl_po" value="${escapeHTML(data.tgl_po || '')}" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
           </div>
           <div>
             <label class="block text-[11px] font-medium text-slate-400 mb-1">Qty PO</label>
             <input type="number" name="qty_po" min="0" value="${escapeHTML(data.qty_po || 0)}" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
           </div>
           <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Status Item Lifecycle</label>
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Status Item</label>
             <select name="status" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
               <option value="Pending PR" ${statusVal === 'Pending PR' ? 'selected' : ''}>Pending PR</option>
               <option value="PR Issued" ${statusVal === 'PR Issued' ? 'selected' : ''}>PR Issued</option>
@@ -622,7 +636,9 @@
         nama_barang: row.querySelector('[name="nama_barang"]').value,
         qty_pp: row.querySelector('[name="qty_pp"]').value,
         no_pr: row.querySelector('[name="no_pr"]').value,
+        tgl_pr: row.querySelector('[name="tgl_pr"]').value,
         no_po: row.querySelector('[name="no_po"]').value,
+        tgl_po: row.querySelector('[name="tgl_po"]').value,
         qty_po: row.querySelector('[name="qty_po"]').value,
         status: row.querySelector('[name="status"]').value,
       };
@@ -665,14 +681,16 @@
           nama_barang: row.querySelector('[name="nama_barang"]').value.trim(),
           qty_pp: parseFloat(row.querySelector('[name="qty_pp"]').value) || 0,
           no_pr: row.querySelector('[name="no_pr"]').value.trim(),
+          tgl_pr: row.querySelector('[name="tgl_pr"]').value,
           no_po: row.querySelector('[name="no_po"]').value.trim(),
+          tgl_po: row.querySelector('[name="tgl_po"]').value,
           qty_po: parseFloat(row.querySelector('[name="qty_po"]').value) || 0,
           status: row.querySelector('[name="status"]').value
         });
       });
 
-      if (!no_pp || !tgl_pp) {
-        showNotification('Nomor PP dan tanggal wajib diisi.', 'error');
+      if (!tgl_pp) {
+        showNotification('Tanggal PP wajib diisi.', 'error');
         return;
       }
       if (!items.length || items.some(i => !i.nama_barang || !Number.isFinite(i.qty_pp) || i.qty_pp < 1 || !Number.isFinite(i.qty_po) || i.qty_po < 0)) {
@@ -680,7 +698,7 @@
         return;
       }
 
-      const duplicate = ppData.some((pp, idx) => idx !== editIndex && pp.no_pp.trim().toLowerCase() === no_pp.toLowerCase());
+      const duplicate = ppData.some((pp, idx) => idx !== editIndex && no_pp && pp.no_pp.trim().toLowerCase() === no_pp.toLowerCase());
       if (duplicate) {
         showNotification('Nomor PP sudah digunakan.', 'error');
         document.getElementById('no_pp').focus();
@@ -744,35 +762,56 @@
       }
     }
 
-    // Export Data Ke CSV (Flat Item Format)
+    // Export Data Ke CSV (Format Anti Berantakan untuk Excel)
     function exportCSV() {
       if (!ppData.length) {
         showNotification("Tidak ada data untuk diexport.", "error");
         return;
       }
 
-      let csv = "No PP,Tanggal PP,Kode Barang,Nama Barang,Qty PP,No PR,No PO,Qty PO,Qty Outstanding,Status\n";
+      // Gunakan titik koma (;) karena Excel region Indonesia membacanya sebagai pemisah kolom
+      const separator = ";"; 
+      
+      // Header Kolom
+      let csv = [
+        "No PP", "Tanggal PP", "Kode Barang", "Nama Barang", "Qty PP", 
+        "No PR", "Tanggal PR", "No PO", "Tanggal PO", "Qty PO", 
+        "Qty Outstanding", "Status"
+      ].join(separator) + "\n";
+
+      // Fungsi untuk membersihkan teks agar tidak merusak struktur CSV
+      const formatCell = (text) => {
+        let str = String(text || '').replace(/"/g, '""'); // Ganti kutip satu (") jadi dua ("")
+        return `"${str}"`; // Bungkus dengan tanda kutip
+      };
 
       ppData.forEach(pp => {
         (pp.items || []).forEach(i => {
-          const outstanding = Math.max(0, i.qty_pp - i.qty_po);
+          const outstanding = Math.max(0, i.qty_pp - (i.qty_po || 0));
+          
           const row = [
-            `"${pp.no_pp}"`,
-            `"${pp.tgl_pp}"`,
-            `"${i.kode_barang || ''}"`,
-            `"${i.nama_barang || ''}"`,
-            i.qty_pp,
-            `"${i.no_pr || ''}"`,
-            `"${i.no_po || ''}"`,
-            i.qty_po,
+            formatCell(pp.no_pp),
+            formatCell(pp.tgl_pp),
+            formatCell(i.kode_barang),
+            formatCell(i.nama_barang),
+            i.qty_pp || 0,
+            formatCell(i.no_pr),
+            formatCell(i.tgl_pr),
+            formatCell(i.no_po),
+            formatCell(i.tgl_po),
+            i.qty_po || 0,
             outstanding,
-            `"${i.status || ''}"`
+            formatCell(i.status)
           ];
-          csv += row.join(",") + "\n";
+          
+          csv += row.join(separator) + "\n";
         });
       });
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      // Tambahkan BOM (Byte Order Mark) agar Excel membaca file ini sebagai UTF-8 murni (mencegah karakter aneh/rusak)
+      const bom = "\uFEFF";
+      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+      
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
@@ -869,7 +908,7 @@
           <tr class="hover:bg-white/5 transition group">
             <td class="py-3.5 px-4 font-bold text-white flex items-center gap-2">
               <i data-lucide="file-check" class="w-4 h-4 text-purple-400"></i>
-              ${escapeHTML(pp.no_pp)}
+              ${escapeHTML(pp.no_pp || '(Auto-Urut)')}
             </td>
             <td class="py-3.5 px-4 text-slate-300">${escapeHTML(pp.tgl_pp)}</td>
             <td class="py-3.5 px-4 text-slate-300 font-medium">${totalItems} Item</td>
@@ -895,12 +934,14 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                   ${pp.items.map(itm => {
                     const outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
+                    const prText = itm.no_pr ? `${escapeHTML(itm.no_pr)}${itm.tgl_pr ? ` (${escapeHTML(itm.tgl_pr)})` : ''}` : '-';
+                    const poText = itm.no_po ? `${escapeHTML(itm.no_po)}${itm.tgl_po ? ` (${escapeHTML(itm.tgl_po)})` : ''}` : '-';
                     return `
                     <div class="p-2.5 rounded-lg bg-slate-900/60 border border-white/5 flex justify-between items-center text-xs">
                       <div>
                         <p class="font-medium text-slate-200">${escapeHTML(itm.nama_barang)} <span class="text-slate-400">(${escapeHTML(itm.kode_barang || '-')})</span></p>
                         <p class="text-[10px] text-slate-400 mt-0.5">
-                          Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR: ${escapeHTML(itm.no_pr || '-')} || PO:${escapeHTML(itm.no_po || '-')} (${itm.qty_po || 0})${outstanding > 0 ? `<span class="text-amber-400 font-semibold ml-1">| Sisa: ${outstanding}</span>` : ''}
+                          Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR: ${prText} \vert{} PO:${poText} (Qty: ${itm.qty_po \vert{}\vert{} 0})${outstanding > 0 ? `<span class="text-amber-400 font-semibold ml-1">| Sisa: ${outstanding}</span>` : ''}
                         </p>
                       </div>
                       <div>
@@ -931,7 +972,9 @@
               <th class="py-3.5 px-3">Nama Barang</th>
               <th class="py-3.5 px-3">Qty PP</th>
               <th class="py-3.5 px-3">No. PR</th>
+              <th class="py-3.5 px-3 border-l border-white/10">Tgl PR</th>
               <th class="py-3.5 px-3">No. PO</th>
+              <th class="py-3.5 px-3 border-l border-white/10">Tgl PO</th>
               <th class="py-3.5 px-3">Qty PO</th>
               <th class="py-3.5 px-3">Outstanding</th>
               <th class="py-3.5 px-3">Status</th>
@@ -945,13 +988,15 @@
           const outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
           html += `
             <tr class="hover:bg-white/5 transition">
-              <td class="py-3 px-3 font-semibold text-purple-300">${escapeHTML(pp.no_pp)}</td>
+              <td class="py-3 px-3 font-semibold text-purple-300">${escapeHTML(pp.no_pp || '(Auto-Urut)')}</td>
               <td class="py-3 px-3 text-slate-400">${escapeHTML(pp.tgl_pp)}</td>
               <td class="py-3 px-3 text-slate-300">${escapeHTML(itm.kode_barang || '-')}</td>
               <td class="py-3 px-3 font-medium text-white">${escapeHTML(itm.nama_barang)}</td>
               <td class="py-3 px-3 font-bold text-slate-200">${itm.qty_pp}</td>
               <td class="py-3 px-3 text-slate-300">${escapeHTML(itm.no_pr || '-')}</td>
+              <td class="py-3 px-3 text-slate-400 border-l border-white/10">${escapeHTML(itm.tgl_pr || '-')}</td>
               <td class="py-3 px-3 text-slate-300">${escapeHTML(itm.no_po || '-')}</td>
+              <td class="py-3 px-3 text-slate-400 border-l border-white/10">${escapeHTML(itm.tgl_po || '-')}</td>
               <td class="py-3 px-3 font-bold text-emerald-400">${itm.qty_po || 0}</td>
               <td class="py-3 px-3 font-semibold ${outstanding > 0 ? 'text-amber-400' : 'text-slate-500'}">${outstanding}</td>
               <td class="py-3 px-3">${getStatusBadge(itm.status, !!itm.no_po)}</td>
@@ -1066,63 +1111,60 @@
         setTimeout(() => toast.remove(), 300);
       }, 4000);
     }
+    
     // 1. Blokir Klik Kanan (Context Menu)
-document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-// 2. Blokir Tombol Shortcut Keyboard
-document.addEventListener('keydown', (e) => {
-  const key = e.key.toLowerCase();
+    // 2. Blokir Tombol Shortcut Keyboard
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
 
-  // Blokir F12
-  if (e.key === 'F12') {
-    e.preventDefault();
-    return false;
-  }
+      // Blokir F12
+      if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+      }
 
-  // Blokir Ctrl+I (serta Ctrl+Shift+I)
-  if (e.ctrlKey && key === 'i') {
-    e.preventDefault();
-    return false;
-  }
+      // Blokir Ctrl+I (serta Ctrl+Shift+I)
+      if (e.ctrlKey && key === 'i') {
+        e.preventDefault();
+        return false;
+      }
 
-  // Blokir Ctrl+Shift+J, Ctrl+Shift+C (Console / Inspect)
-  if (e.ctrlKey && e.shiftKey && (key === 'j' || key === 'c')) {
-    e.preventDefault();
-    return false;
-  }
+      // Blokir Ctrl+Shift+J, Ctrl+Shift+C (Console / Inspect)
+      if (e.ctrlKey && e.shiftKey && (key === 'j' || key === 'c')) {
+        e.preventDefault();
+        return false;
+      }
 
-  // Blokir Ctrl+U (View Source)
-  if (e.ctrlKey && key === 'u') {
-    e.preventDefault();
-    return false;
-  }
+      // Blokir Ctrl+U (View Source)
+      if (e.ctrlKey && key === 'u') {
+        e.preventDefault();
+        return false;
+      }
 
-  // Blokir Ctrl+S (Save Page)
-  if (e.ctrlKey && key === 's') {
-    e.preventDefault();
-    return false;
-  }
-});
+      // Blokir Ctrl+S (Save Page)
+      if (e.ctrlKey && key === 's') {
+        e.preventDefault();
+        return false;
+      }
+    });
 
-// 3. Deteksi Pembukaan DevTools (Debugger Loop / Infinite Pause)
-// Jika pengguna membuka DevTools melalui Menu Browser (Tiga Titik -> More Tools -> Developer Tools)
-setInterval(() => {
-  const startTime = performance.now();
-  (function() {}.constructor("debugger")());
-  const endTime = performance.now();
-  
-  // Jika selisih waktu > 100ms, berarti debugger aktif (DevTools terbuka)
-  if (endTime - startTime > 100) {
-    document.body.innerHTML = `
-      <div style="background:#0f172a; color:#f8fafc; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif;">
-        <h1 style="font-size:24px; color:#f87171; margin-bottom:12px;">Akses Ditolak</h1>
-        <p style="font-size:14px; color:#94a3b8;">Developer Tools terdeteksi. Silakan tutup Developer Tools untuk melanjutkan.</p>
-      </div>`;
-  }
-}, 1000);
-    // Catatan: proteksi klik kanan/DevTools di sisi browser dihilangkan.
-    // Proteksi seperti itu tidak mengamankan data dan dapat membuat aplikasi macet.
-
+    // 3. Deteksi Pembukaan DevTools (Debugger Loop / Infinite Pause)
+    setInterval(() => {
+      const startTime = performance.now();
+      (function() {}.constructor("debugger")());
+      const endTime = performance.now();
+      
+      // Jika selisih waktu > 100ms, berarti debugger aktif (DevTools terbuka)
+      if (endTime - startTime > 100) {
+        document.body.innerHTML = `
+          <div style="background:#0f172a; color:#f8fafc; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif;">
+            <h1 style="font-size:24px; color:#f87171; margin-bottom:12px;">Akses Ditolak</h1>
+            <p style="font-size:14px; color:#94a3b8;">Developer Tools terdeteksi. Silakan tutup Developer Tools untuk melanjutkan.</p>
+          </div>`;
+      }
+    }, 1000);
   </script>
 </body>
 </html>
