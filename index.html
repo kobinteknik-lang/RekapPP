@@ -302,7 +302,7 @@
       </div>
 
       <p class="text-xs text-slate-300 leading-relaxed">
-        Masukkan <b>Web App URL</b> dari Google Apps Script untuk menghubungkan form web ini secara langsung ke Google Sheets milik Anda.
+        Masukkan <b>Web App URL</b> dari Google Apps Script untuk menghubungkan form web ini secara langsung ke Google Sheets milik Anda. Sinkronisasi kosong diblokir untuk melindungi data yang sudah ada.
       </p>
 
       <div>
@@ -717,7 +717,7 @@
       try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
       renderData();
       closeModal();
-      showNotification("Data berhasil disimpan secara lokal.", "success");
+      showNotification("Data tersimpan di browser. Menunggu verifikasi Google Sheets…", "info");
       setStorageStatus('Data lokal tersimpan.');
 
       if (scriptUrl) {
@@ -941,7 +941,7 @@
                       <div>
                         <p class="font-medium text-slate-200">${escapeHTML(itm.nama_barang)} <span class="text-slate-400">(${escapeHTML(itm.kode_barang || '-')})</span></p>
                         <p class="text-[10px] text-slate-400 mt-0.5">
-                          Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR: ${prText} \vert{} PO:${poText} (Qty: ${itm.qty_po \vert{}\vert{} 0})${outstanding > 0 ? `<span class="text-amber-400 font-semibold ml-1">| Sisa: ${outstanding}</span>` : ''}
+                          Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR: ${prText} | PO:${poText} (Qty: ${itm.qty_po || 0})${outstanding > 0 ? `<span class="text-amber-400 font-semibold ml-1">| Sisa: ${outstanding}</span>` : ''}
                         </p>
                       </div>
                       <div>
@@ -1010,65 +1010,127 @@
     }
 
     // Integrasi Google Sheets API
-    async function fetchFromSheets() {
-      if (!scriptUrl) return;
+    // POST no-cors memang tidak bisa membaca respons server; setelah mengirim,
+    // aplikasi membaca ulang data dan membandingkan hasilnya sebelum menyatakan sukses.
+    async function fetchFromSheets(options = {}) {
+      if (!scriptUrl) {
+        setSyncStatus('Google Sheets belum dikonfigurasi.');
+        return false;
+      }
       const icon = document.getElementById('refresh-icon');
       if (icon) icon.classList.add('animate-spin');
-
       try {
         setSyncStatus('Mengambil data dari Google Sheets…');
-        const res = await fetch(`${scriptUrl}?action=read`, { cache: 'no-store' });
+        const res = await fetch(`${scriptUrl}?action=read&_=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const result = await res.json();
         if (!result || result.status !== 'success' || !Array.isArray(result.records)) {
           throw new Error(result?.message || 'Respons Google Sheets tidak sesuai format.');
         }
 
-        if (result.status === 'success') {
-          ppData = normalizeRecords(result.records);
-          lastSyncedAt = new Date().toISOString();
-          localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
-          saveLocalData();
-          renderData();
-          setSyncStatus('Data berhasil dimuat dari Google Sheets.');
-          showNotification("Data berhasil dimuat dari Google Sheets!", "success");
+        const remote = normalizeRecords(result.records);
+        // Jangan timpa data lokal yang belum pernah disinkronkan dengan respons kosong.
+        const localHasData = ppData.some(pp => pp.no_pp || (pp.items || []).length);
+        if (remote.length === 0 && localHasData && !options.allowEmptyReplace) {
+          const confirmed = confirm('Google Sheets mengembalikan 0 data, sementara browser ini memiliki data lokal. Data lokal tidak ditimpa. Tetap muat data kosong dari server?');
+          if (!confirmed) {
+            setSyncStatus('Sinkronisasi dibatalkan; data lokal dipertahankan.');
+            return false;
+          }
         }
+        ppData = remote;
+        lastSyncedAt = new Date().toISOString();
+        localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
+        saveLocalData();
+        renderData();
+        setSyncStatus('Data berhasil dimuat dari Google Sheets.');
+        showNotification('Data berhasil dimuat dari Google Sheets!', 'success');
+        return true;
       } catch (err) {
         console.error(err);
         setSyncStatus('Gagal memuat Google Sheets: ' + (err.message || 'periksa koneksi.'));
-        showNotification("Gagal mengambil data: " + (err.message || 'periksa koneksi.'), "error");
+        showNotification('Gagal mengambil data: ' + (err.message || 'periksa koneksi.'), 'error');
+        return false;
       } finally {
         if (icon) icon.classList.remove('animate-spin');
       }
     }
 
+    function stableDataString(records) {
+      return JSON.stringify(normalizeRecords(records).map(pp => ({
+        no_pp: pp.no_pp, tgl_pp: pp.tgl_pp,
+        items: pp.items.map(i => ({
+          kode_barang: i.kode_barang, nama_barang: i.nama_barang, qty_pp: Number(i.qty_pp) || 0,
+          no_pr: i.no_pr, tgl_pr: i.tgl_pr, no_po: i.no_po, tgl_po: i.tgl_po,
+          qty_po: Number(i.qty_po) || 0, status: i.status || 'Pending PR'
+        }))
+      })).sort((a,b) => a.no_pp.localeCompare(b.no_pp)));
+    }
+
     async function syncToSheets() {
       if (!scriptUrl) {
-        setSyncStatus('Google Sheets belum dikonfigurasi.');
-        return;
+        setSyncStatus('Google Sheets belum dikonfigurasi. Data hanya tersimpan di browser.');
+        return false;
       }
-      if (isSyncing) return;
+      if (isSyncing) {
+        showNotification('Sinkronisasi sedang berjalan. Tunggu hingga selesai.', 'info');
+        return false;
+      }
       isSyncing = true;
       setSyncStatus('Mengirim data ke Google Sheets…');
-
       try {
+        // Snapshot lokal agar jika proses gagal, data browser tetap bisa dipulihkan.
+        const payloadRecords = normalizeRecords(ppData);
+        // Ambil nomor berikutnya dari server supaya PP baru tidak bentrok dengan data di Sheets.
+        if (payloadRecords.some(pp => !String(pp.no_pp || '').trim())) {
+          const nextRes = await fetch(`${scriptUrl}?action=get_next_pp&_=${Date.now()}`, { cache: 'no-store' });
+          if (!nextRes.ok) throw new Error('Tidak bisa mengambil nomor PP berikutnya dari server.');
+          const nextJson = await nextRes.json();
+          if (nextJson?.status !== 'success' || !nextJson.next_no_pp) throw new Error(nextJson?.message || 'Nomor PP berikutnya tidak tersedia.');
+          let nextNumber = parseInt(String(nextJson.next_no_pp).match(/(\d+)$/)?.[1] || '1', 10);
+          payloadRecords.forEach(pp => {
+            if (!String(pp.no_pp || '').trim()) {
+              pp.no_pp = 'PP-' + String(nextNumber).padStart(4, '0');
+              nextNumber++;
+            }
+          });
+        }
+        if (!payloadRecords.length) {
+          const allowClear = confirm('Data lokal kosong. Demi mencegah penghapusan data server yang tidak disengaja, sinkronisasi kosong diblokir. Jika memang ingin menghapus seluruh data, lakukan penghapusan secara manual di Google Sheets setelah membuat salinan cadangan.');
+          if (!allowClear) return false;
+          throw new Error('Sinkronisasi kosong diblokir untuk melindungi data server.');
+        }
+        const before = stableDataString(payloadRecords);
         await fetch(scriptUrl, {
-          method: 'POST',
-          mode: 'no-cors',
+          method: 'POST', mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'sync_all',
-            records: ppData
-          })
+          body: JSON.stringify({ action: 'sync_all', records: payloadRecords })
         });
+        // no-cors menghasilkan opaque response. Baca ulang server untuk verifikasi nyata.
+        await new Promise(resolve => setTimeout(resolve, 700));
+        const verifyRes = await fetch(`${scriptUrl}?action=read&_=${Date.now()}`, { cache: 'no-store' });
+        if (!verifyRes.ok) throw new Error(`Verifikasi gagal: HTTP ${verifyRes.status}`);
+        const verifyJson = await verifyRes.json();
+        if (!verifyJson || verifyJson.status !== 'success' || !Array.isArray(verifyJson.records)) {
+          throw new Error(verifyJson?.message || 'Respons verifikasi tidak valid.');
+        }
+        const after = stableDataString(verifyJson.records);
+        if (before !== after) throw new Error('Data server berbeda dari data yang dikirim. Data lokal tetap dipertahankan; silakan klik Sync untuk memeriksa data server.');
+        // Simpan nomor PP yang mungkin baru dibuat server ke data lokal setelah verifikasi berhasil.
+        ppData = normalizeRecords(payloadRecords);
+        saveLocalData();
+        renderData();
         lastSyncedAt = new Date().toISOString();
         localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
-        setSyncStatus('Data dikirim ke Sheets. Klik Sync untuk verifikasi.');
-        showNotification("Permintaan sinkronisasi dikirim.", "info");
+        setSyncStatus('Sinkronisasi berhasil diverifikasi.');
+        setStorageStatus('Data lokal dan Google Sheets sudah cocok.');
+        showNotification('Data tersimpan dan berhasil diverifikasi di Google Sheets.', 'success');
+        return true;
       } catch (err) {
         console.error(err);
-        setSyncStatus('Sinkronisasi gagal: ' + (err.message || 'periksa koneksi.'));
-        showNotification("Gagal sinkronisasi ke Sheets.", "error");
+        setSyncStatus('Sinkronisasi belum terverifikasi: ' + (err.message || 'periksa koneksi.'));
+        showNotification('Sinkronisasi belum terverifikasi. Data lokal tetap tersimpan.', 'error');
+        return false;
       } finally {
         isSyncing = false;
       }
