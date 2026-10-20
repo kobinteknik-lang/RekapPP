@@ -134,7 +134,7 @@
       </div>
     </header>
 
-    <!-- Ringkasan Statistik (Upgrade: Teks Kecil Atas, Angka Besar Bawah) -->
+    <!-- Ringkasan Statistik -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Ringkasan pengadaan">
       <!-- Card 1 -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between">
@@ -192,14 +192,12 @@
       <!-- Search Input -->
       <div class="relative w-full md:w-96">
         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <!-- Ditambahkan currentPage = 1 untuk Pagination Reset -->
-        <input type="text" id="searchInput" oninput="currentPage = 1; renderData()" placeholder="Cari No PP, Kode/Nama Barang, PR, PO..." class="w-full glass-input pl-10 pr-4 py-2 rounded-xl text-sm placeholder-slate-400">
+        <input type="text" id="searchInput" oninput="resetPageAndRender()" placeholder="Cari No PP, Kode/Nama Barang, PR, PO..." class="w-full glass-input pl-10 pr-4 py-2 rounded-xl text-sm placeholder-slate-400">
       </div>
 
       <!-- Status Filter & View Toggle -->
       <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
-        <!-- Ditambahkan currentPage = 1 untuk Pagination Reset -->
-        <select id="statusFilter" aria-label="Filter status pengadaan" onchange="currentPage = 1; renderData()" class="glass-input rounded-xl px-3 py-2 text-xs">
+        <select id="statusFilter" aria-label="Filter status pengadaan" onchange="resetPageAndRender()" class="glass-input rounded-xl px-3 py-2 text-xs">
           <option value="all">Semua Status</option>
           <option value="pending">Pending PR/PO</option>
           <option value="po_issued">PO Issued / Partial</option>
@@ -224,8 +222,7 @@
           <!-- Table content injected via JavaScript -->
         </div>
       </div>
-      
-      <!-- Container Pagination Baru -->
+      <!-- Container Pagination -->
       <div id="paginationContainer" class="mt-4 border-t border-white/10 pt-4 no-print"></div>
     </div>
 
@@ -331,37 +328,40 @@
     // State & Variables
     let scriptUrl = localStorage.getItem('google_script_url') || '';
     let ppData = [];
-    let currentViewMode = 'grouped'; // 'grouped' atau 'flat'
+    let currentViewMode = 'grouped'; 
     let isSyncing = false;
     let lastSyncedAt = localStorage.getItem('rekap_pp_last_sync') || null;
     const DRAFT_KEY = 'rekap_pp_draft_v1';
     
-    // Variabel Pagination Baru
+    // Variabel Pagination
     let currentPage = 1;
     let rowsPerPage = 10;
 
-    try { ppData = normalizeRecords(JSON.parse(localStorage.getItem('rekap_pp_db') || '[]')); }
-    catch (err) { ppData = []; }
+    try { 
+      const rawData = localStorage.getItem('rekap_pp_db');
+      ppData = rawData ? normalizeRecords(JSON.parse(rawData)) : []; 
+    } catch (err) { ppData = []; }
 
-    // Normalisasi data
+    // Normalisasi data (Aman untuk Browser Lama)
     function normalizeRecords(records) {
       if (!Array.isArray(records)) throw new Error('Format data harus berupa daftar PP.');
       return records.map((pp, idx) => {
         if (!pp || typeof pp !== 'object') throw new Error(`Data PP ke-${idx + 1} tidak valid.`);
         const items = Array.isArray(pp.items) ? pp.items : [];
         return {
-          no_pp: String(pp.no_pp ?? '').trim(),
-          tgl_pp: String(pp.tgl_pp ?? ''),
+          no_pp: String(pp.no_pp || '').trim(),
+          tgl_pp: String(pp.tgl_pp || ''),
           items: items.map(itm => {
-            const qty_pp = Math.max(0, Number(itm?.qty_pp) || 0);
-            const qty_po = Math.max(0, Number(itm?.qty_po) || 0);
-            const no_pr = String(itm?.no_pr ?? '').trim();
-            const tgl_pr = String(itm?.tgl_pr ?? '').trim();
-            const no_po = String(itm?.no_po ?? '').trim();
-            const tgl_po = String(itm?.tgl_po ?? '').trim();
+            if (!itm) itm = {};
+            const qty_pp = Math.max(0, Number(itm.qty_pp) || 0);
+            const qty_po = Math.max(0, Number(itm.qty_po) || 0);
+            const no_pr = String(itm.no_pr || '').trim();
+            const tgl_pr = String(itm.tgl_pr || '').trim();
+            const no_po = String(itm.no_po || '').trim();
+            const tgl_po = String(itm.tgl_po || '').trim();
             
-            let status = itm?.status || 'Pending PR';
-            if (status === 'Pending PR' || !itm?.status) {
+            let status = itm.status || 'Pending PR';
+            if (status === 'Pending PR' || !itm.status) {
               if (qty_po >= qty_pp && qty_pp > 0 && no_po) status = 'Completed';
               else if (qty_po > 0 && qty_po < qty_pp) status = 'Partial Delivered';
               else if (no_po) status = 'PO Issued';
@@ -370,8 +370,8 @@
             }
 
             return {
-              kode_barang: String(itm?.kode_barang ?? ''),
-              nama_barang: String(itm?.nama_barang ?? ''),
+              kode_barang: String(itm.kode_barang || ''),
+              nama_barang: String(itm.nama_barang || ''),
               qty_pp: qty_pp, no_pr: no_pr, tgl_pr: tgl_pr,
               no_po: no_po, tgl_po: tgl_po, qty_po: qty_po, status: status
             };
@@ -381,7 +381,7 @@
     }
 
     function escapeHTML(value) {
-      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+      return String(value || '').replace(/[&<>"']/g, ch => ({
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
       }[ch]));
     }
@@ -429,17 +429,20 @@
         const draft = {
           no_pp: document.getElementById('no_pp').value,
           tgl_pp: document.getElementById('tgl_pp').value,
-          items: Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(row => ({
-            kode_barang: row.querySelector('[name="kode_barang"]').value,
-            nama_barang: row.querySelector('[name="nama_barang"]').value,
-            qty_pp: row.querySelector('[name="qty_pp"]').value,
-            no_pr: row.querySelector('[name="no_pr"]').value,
-            tgl_pr: row.querySelector('[name="tgl_pr"]').value,
-            no_po: row.querySelector('[name="no_po"]').value,
-            tgl_po: row.querySelector('[name="tgl_po"]').value,
-            qty_po: row.querySelector('[name="qty_po"]').value,
-            status: row.querySelector('[name="status"]')?.value || 'Pending PR'
-          })),
+          items: Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(row => {
+            const statusEl = row.querySelector('[name="status"]');
+            return {
+              kode_barang: row.querySelector('[name="kode_barang"]').value,
+              nama_barang: row.querySelector('[name="nama_barang"]').value,
+              qty_pp: row.querySelector('[name="qty_pp"]').value,
+              no_pr: row.querySelector('[name="no_pr"]').value,
+              tgl_pr: row.querySelector('[name="tgl_pr"]').value,
+              no_po: row.querySelector('[name="no_po"]').value,
+              tgl_po: row.querySelector('[name="tgl_po"]').value,
+              qty_po: row.querySelector('[name="qty_po"]').value,
+              status: statusEl ? statusEl.value : 'Pending PR'
+            };
+          }),
           savedAt: new Date().toISOString()
         };
         localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
@@ -485,10 +488,16 @@
       restoreDraftIfAvailable();
     });
 
+    // Helper untuk Reset Halaman dari Input Search & Filter
+    function resetPageAndRender() {
+      currentPage = 1;
+      renderData();
+    }
+
     // Toggle View
     function setViewMode(mode) {
       currentViewMode = mode;
-      currentPage = 1; // Reset halaman saat ganti view
+      currentPage = 1; // Reset halaman
       const gBtn = document.getElementById('viewGroupedBtn');
       const fBtn = document.getElementById('viewFlatBtn');
       
@@ -535,7 +544,8 @@
     }
 
     // Dynamic Row
-    function addItemRow(data = {}) {
+    function addItemRow(data) {
+      data = data || {};
       const container = document.getElementById('itemRowsContainer');
       const rowIndex = container.children.length;
       const row = document.createElement('div');
@@ -676,7 +686,7 @@
         return;
       }
 
-      const record = { no_pp, tgl_pp, items };
+      const record = { no_pp: no_pp, tgl_pp: tgl_pp, items: items };
       if (editIndex >= 0) ppData[editIndex] = record; else ppData.unshift(record);
 
       saveLocalData();
@@ -728,7 +738,8 @@
       const container = document.getElementById('tableContainer');
       const pagContainer = document.getElementById('paginationContainer');
       const query = document.getElementById('searchInput').value.toLowerCase().trim();
-      const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+      const statusFilterEl = document.getElementById('statusFilter');
+      const statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
       updateStats();
 
       const filtered = ppData.filter(pp => {
@@ -759,7 +770,6 @@
         return;
       }
 
-      // Pemotongan Array untuk Pagination (Berdasarkan Dokumen PP)
       let paginatedData = filtered;
       if (rowsPerPage !== 'all') {
         const totalPages = Math.ceil(filtered.length / rowsPerPage);
@@ -769,14 +779,14 @@
         paginatedData = filtered.slice(startIndex, startIndex + parseInt(rowsPerPage));
       }
 
-      if (currentViewMode === 'grouped') renderGroupedView(container, paginatedData);
+      if (currentViewMode === 'grouped') renderGroupedView(container, paginatedData, filtered);
       else renderFlatView(container, paginatedData);
       
       renderPaginationControls(filtered.length);
       lucide.createIcons();
     }
 
-    function renderGroupedView(container, data) {
+    function renderGroupedView(container, data, filteredFullData) {
       let html = `
         <table class="w-full text-left text-xs border-collapse min-w-[700px]">
           <thead>
@@ -790,8 +800,8 @@
           </thead>
           <tbody class="divide-y divide-white/5">
       `;
-      data.forEach((pp, idx) => {
-        // Karena data yang di-pass adalah paginatedData, kita butuh index asli (global) untuk Edit/Delete
+      data.forEach(pp => {
+        // Cari indeks aslinya dari array ppData utama
         const globalIdx = ppData.findIndex(p => p === pp);
         const totalItems = pp.items.length;
         const totalPO = pp.items.filter(i => i.no_po).length;
@@ -990,7 +1000,7 @@
         const res = await fetch(`${scriptUrl}?action=read&_=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const result = await res.json();
-        if (!result || result.status !== 'success' || !Array.isArray(result.records)) throw new Error(result?.message || 'Format tidak sesuai.');
+        if (!result || result.status !== 'success' || !Array.isArray(result.records)) throw new Error((result && result.message) || 'Format tidak sesuai.');
         
         const remote = normalizeRecords(result.records);
         const localHasData = ppData.some(pp => pp.no_pp || (pp.items || []).length);
@@ -1036,7 +1046,8 @@
           const nextRes = await fetch(`${scriptUrl}?action=get_next_pp&_=${Date.now()}`, { cache: 'no-store' });
           if (!nextRes.ok) throw new Error('Tidak bisa mengambil nomor PP server.');
           const nextJson = await nextRes.json();
-          let nextNumber = parseInt(String(nextJson.next_no_pp).match(/(\d+)$/)?.[1] || '1', 10);
+          const matchNo = String(nextJson && nextJson.next_no_pp).match(/(\d+)$/);
+          let nextNumber = parseInt(matchNo ? matchNo[1] : '1', 10);
           payloadRecords.forEach(pp => {
             if (!String(pp.no_pp || '').trim()) {
               pp.no_pp = 'PP-' + String(nextNumber).padStart(4, '0');
@@ -1076,7 +1087,8 @@
       catch (err) { setStorageStatus('Penyimpanan lokal gagal.'); showNotification('Penyimpanan lokal penuh/diblokir.', 'error'); }
     }
 
-    function showNotification(message, type = "info") {
+    function showNotification(message, type) {
+      if (!type) type = 'info';
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
       const colors = {
