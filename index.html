@@ -17,7 +17,6 @@
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    /* Gradient Background: Merah - Biru - Ungu */
     body {
       background: linear-gradient(135deg, #1a0022 0%, #0d1b2a 40%, #2a0825 70%, #0f051d 100%);
       background-size: 300% 300%;
@@ -32,7 +31,6 @@
       100% { background-position: 0% 50%; }
     }
 
-    /* Glassmorphism Styles */
     .glass-card {
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(16px);
@@ -55,7 +53,6 @@
       outline: none;
     }
 
-    /* Micro Animations */
     .btn-bounce {
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -66,7 +63,6 @@
       transform: translateY(1px);
     }
 
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
@@ -76,7 +72,6 @@
     .status-line { font-size: 11px; color: #cbd5e1; }
     .stat-card { background: rgba(15, 23, 42, 0.48); border: 1px solid rgba(255, 255, 255, 0.10); }
 
-    /* Layout Cetak / Print Styles */
     @media print {
       body { background: none !important; color: #000 !important; }
       .glass-card { background: none !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important; }
@@ -87,13 +82,10 @@
 </head>
 <body class="p-4 md:p-8">
 
-  <!-- Datalist History Auto-complete -->
   <datalist id="itemHistoryList"></datalist>
 
-  <!-- Container Utama -->
   <div class="max-w-[1400px] mx-auto space-y-6">
 
-    <!-- Header Section -->
     <header class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="flex items-center space-x-4">
         <div class="p-3 bg-gradient-to-tr from-red-500 via-purple-600 to-blue-500 rounded-xl shadow-lg">
@@ -105,14 +97,13 @@
         </div>
       </div>
 
-      <!-- Action Buttons Top Header -->
       <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-        <button onclick="exportCSV()" class="btn-bounce flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-700/80 hover:bg-emerald-600 text-sm font-medium border border-emerald-500/30 shadow-md transition" title="Export data ke CSV">
+        <button onclick="exportCSV()" class="btn-bounce flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-700/80 hover:bg-emerald-600 text-sm font-medium border border-emerald-500/30 shadow-md transition">
           <i data-lucide="download" class="w-4 h-4 text-emerald-200"></i>
           <span>Export CSV</span>
         </button>
 
-        <button onclick="window.print()" class="btn-bounce flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-sm font-medium border border-slate-600/50 shadow-md transition" title="Cetak laporan">
+        <button onclick="window.print()" class="btn-bounce flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-sm font-medium border border-slate-600/50 shadow-md transition">
           <i data-lucide="printer" class="w-4 h-4 text-slate-300"></i>
           <span>Cetak</span>
         </button>
@@ -134,9 +125,7 @@
       </div>
     </header>
 
-    <!-- Ringkasan Statistik -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Ringkasan pengadaan">
-      <!-- Card 1 -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between">
         <div class="flex justify-between items-start mb-3">
           <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Dokumen PP</span>
@@ -147,7 +136,6 @@
           <span id="statPP" class="text-4xl font-extrabold text-white leading-none">0</span>
         </div>
       </div>
-      <!-- Card 2 -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between">
         <div class="flex justify-between items-start mb-3">
           <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Jenis Barang</span>
@@ -158,7 +146,6 @@
           <span id="statItems" class="text-4xl font-extrabold text-white leading-none">0</span>
         </div>
       </div>
-      <!-- Card 3 -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between">
         <div class="flex justify-between items-start mb-3">
           <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Barang Selesai / PO</span>
@@ -169,7 +156,6 @@
           <span id="statPO" class="text-4xl font-extrabold text-white leading-none">0</span>
         </div>
       </div>
-      <!-- Card 4 -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between">
         <div class="flex justify-between items-start mb-3">
           <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Menunggu (Pending)</span>
@@ -187,15 +173,12 @@
       <p id="syncStatus" class="status-line">Google Sheets belum disinkronkan.</p>
     </div>
 
-    <!-- Toolbar: Search & View Switcher -->
     <div class="glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 no-print">
-      <!-- Search Input -->
       <div class="relative w-full md:w-96">
         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
         <input type="text" id="searchInput" oninput="resetPageAndRender()" placeholder="Cari No PP, Kode/Nama Barang, PR, PO..." class="w-full glass-input pl-10 pr-4 py-2 rounded-xl text-sm placeholder-slate-400">
       </div>
 
-      <!-- Status Filter & View Toggle -->
       <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
         <select id="statusFilter" aria-label="Filter status pengadaan" onchange="resetPageAndRender()" class="glass-input rounded-xl px-3 py-2 text-xs">
           <option value="all">Semua Status</option>
@@ -205,49 +188,37 @@
         </select>
         <span class="text-xs text-slate-400 font-medium hidden sm:inline">Tampilan:</span>
         <div class="bg-slate-900/60 p-1 rounded-xl border border-slate-700/50 flex space-x-1">
-          <button id="viewGroupedBtn" onclick="setViewMode('grouped')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-purple-600 text-white shadow">
-            Grouped PP
-          </button>
-          <button id="viewFlatBtn" onclick="setViewMode('flat')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
-            Rincian Item
-          </button>
+          <button id="viewGroupedBtn" onclick="setViewMode('grouped')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-purple-600 text-white shadow">Grouped PP</button>
+          <button id="viewFlatBtn" onclick="setViewMode('flat')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Rincian Item</button>
         </div>
       </div>
     </div>
 
-    <!-- Data Container Table & Pagination -->
     <div class="glass-card rounded-2xl p-6 overflow-hidden relative">
       <div class="overflow-x-auto min-h-[300px]">
-        <div id="tableContainer">
-          <!-- Table content injected via JavaScript -->
-        </div>
+        <div id="tableContainer"></div>
       </div>
-      <!-- Container Pagination -->
       <div id="paginationContainer" class="mt-4 border-t border-white/10 pt-4 no-print"></div>
     </div>
 
   </div>
 
-  <!-- Modal Form Input PP Multi-Item -->
   <div id="ppModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden transition-opacity duration-300">
     <div class="glass-card rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
       
-      <!-- Modal Header -->
       <div class="p-6 border-b border-white/10 flex justify-between items-center bg-slate-900/40">
         <div>
           <h2 id="modalTitle" class="text-xl font-bold text-white">Input Permintaan Pembelian (PP)</h2>
           <p class="text-xs text-slate-400 mt-1">Tambahkan satu dokumen PP dengan 1 atau beberapa barang sekaligus.</p>
         </div>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition p-1.5 rounded-lg hover:bg-slate-800">
+        <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white transition p-1.5 rounded-lg hover:bg-slate-800">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Modal Body (Form) -->
       <form id="ppForm" onsubmit="handleFormSubmit(event)" class="p-6 overflow-y-auto space-y-6 flex-1">
         <input type="hidden" id="editIndex" value="-1">
 
-        <!-- Header Info PP -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/30 p-4 rounded-xl border border-slate-800">
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1">Nomor PP (Kosongkan utk Auto-urut)</label>
@@ -259,7 +230,6 @@
           </div>
         </div>
 
-        <!-- Section Daftar Barang (Multi Item) -->
         <div class="space-y-4">
           <div class="flex justify-between items-center">
             <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
@@ -272,13 +242,9 @@
             </button>
           </div>
 
-          <!-- Dynamic Item Rows Container -->
-          <div id="itemRowsContainer" class="space-y-3">
-            <!-- Row Items injected via JS -->
-          </div>
+          <div id="itemRowsContainer" class="space-y-3"></div>
         </div>
 
-        <!-- Modal Footer Actions -->
         <div class="pt-4 border-t border-white/10 flex justify-end space-x-3">
           <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
             Batal
@@ -291,7 +257,6 @@
     </div>
   </div>
 
-  <!-- Modal Config Google Apps Script -->
   <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden transition-opacity duration-300">
     <div class="glass-card rounded-2xl w-full max-w-lg p-6 space-y-5 border border-white/20">
       <div class="flex justify-between items-center">
@@ -299,7 +264,7 @@
           <i data-lucide="link-2" class="w-5 h-5 text-purple-400"></i>
           Konfigurasi Google Sheets API
         </h3>
-        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white transition">
+        <button type="button" onclick="closeConfigModal()" class="text-slate-400 hover:text-white transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -314,53 +279,48 @@
       </div>
 
       <div class="flex justify-end space-x-3 pt-2">
-        <button onclick="closeConfigModal()" class="px-4 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800 transition">Batal</button>
-        <button onclick="saveConfig()" class="btn-bounce px-5 py-2 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white transition shadow">Simpan Config</button>
+        <button type="button" onclick="closeConfigModal()" class="px-4 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800 transition">Batal</button>
+        <button type="button" onclick="saveConfig()" class="btn-bounce px-5 py-2 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white transition shadow">Simpan Config</button>
       </div>
     </div>
   </div>
 
-  <!-- Container Notifications / Toasts -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
 
-  <!-- JavaScript Logika Aplikasi -->
   <script>
-    // State & Variables
-    let scriptUrl = localStorage.getItem('google_script_url') || '';
-    let ppData = [];
-    let currentViewMode = 'grouped'; 
-    let isSyncing = false;
-    let lastSyncedAt = localStorage.getItem('rekap_pp_last_sync') || null;
-    const DRAFT_KEY = 'rekap_pp_draft_v1';
+    var scriptUrl = localStorage.getItem('google_script_url') || '';
+    var ppData = [];
+    var currentViewMode = 'grouped'; 
+    var isSyncing = false;
+    var lastSyncedAt = localStorage.getItem('rekap_pp_last_sync') || null;
+    var DRAFT_KEY = 'rekap_pp_draft_v1';
     
-    // Variabel Pagination
-    let currentPage = 1;
-    let rowsPerPage = 10;
+    var currentPage = 1;
+    var rowsPerPage = 10;
 
     try { 
-      const rawData = localStorage.getItem('rekap_pp_db');
+      var rawData = localStorage.getItem('rekap_pp_db');
       ppData = rawData ? normalizeRecords(JSON.parse(rawData)) : []; 
     } catch (err) { ppData = []; }
 
-    // Normalisasi data (Aman untuk Browser Lama)
     function normalizeRecords(records) {
       if (!Array.isArray(records)) throw new Error('Format data harus berupa daftar PP.');
-      return records.map((pp, idx) => {
-        if (!pp || typeof pp !== 'object') throw new Error(`Data PP ke-${idx + 1} tidak valid.`);
-        const items = Array.isArray(pp.items) ? pp.items : [];
+      return records.map(function(pp, idx) {
+        if (!pp || typeof pp !== 'object') throw new Error('Data PP ke-' + (idx + 1) + ' tidak valid.');
+        var items = Array.isArray(pp.items) ? pp.items : [];
         return {
           no_pp: String(pp.no_pp || '').trim(),
           tgl_pp: String(pp.tgl_pp || ''),
-          items: items.map(itm => {
+          items: items.map(function(itm) {
             if (!itm) itm = {};
-            const qty_pp = Math.max(0, Number(itm.qty_pp) || 0);
-            const qty_po = Math.max(0, Number(itm.qty_po) || 0);
-            const no_pr = String(itm.no_pr || '').trim();
-            const tgl_pr = String(itm.tgl_pr || '').trim();
-            const no_po = String(itm.no_po || '').trim();
-            const tgl_po = String(itm.tgl_po || '').trim();
+            var qty_pp = Math.max(0, Number(itm.qty_pp) || 0);
+            var qty_po = Math.max(0, Number(itm.qty_po) || 0);
+            var no_pr = String(itm.no_pr || '').trim();
+            var tgl_pr = String(itm.tgl_pr || '').trim();
+            var no_po = String(itm.no_po || '').trim();
+            var tgl_po = String(itm.tgl_po || '').trim();
             
-            let status = itm.status || 'Pending PR';
+            var status = itm.status || 'Pending PR';
             if (status === 'Pending PR' || !itm.status) {
               if (qty_po >= qty_pp && qty_pp > 0 && no_po) status = 'Completed';
               else if (qty_po > 0 && qty_po < qty_pp) status = 'Partial Delivered';
@@ -381,28 +341,30 @@
     }
 
     function escapeHTML(value) {
-      return String(value || '').replace(/[&<>"']/g, ch => ({
-        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
-      }[ch]));
+      return String(value || '').replace(/[&<>"']/g, function(ch) {
+        return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch];
+      });
     }
 
     function setStorageStatus(message) {
-      const el = document.getElementById('storageStatus');
+      var el = document.getElementById('storageStatus');
       if (el) el.textContent = message;
     }
     
     function setSyncStatus(message) {
-      const el = document.getElementById('syncStatus');
+      var el = document.getElementById('syncStatus');
       if (el) {
-        let fullMsg = message;
-        if (lastSyncedAt) fullMsg += ` (Terakhir Sync: ${new Date(lastSyncedAt).toLocaleTimeString('id-ID')})`;
+        var fullMsg = message;
+        if (lastSyncedAt) fullMsg += ' (Terakhir Sync: ' + new Date(lastSyncedAt).toLocaleTimeString('id-ID') + ')';
         el.textContent = fullMsg;
       }
     }
 
     function updateStats() {
-      const allItems = ppData.reduce((sum, pp) => sum + (Array.isArray(pp.items) ? pp.items.length : 0), 0);
-      const completedOrPO = ppData.reduce((sum, pp) => sum + (pp.items || []).filter(i => String(i.no_po || '').trim()).length, 0);
+      var allItems = ppData.reduce(function(sum, pp) { return sum + (Array.isArray(pp.items) ? pp.items.length : 0); }, 0);
+      var completedOrPO = ppData.reduce(function(sum, pp) {
+        return sum + (pp.items || []).filter(function(i) { return String(i.no_po || '').trim() !== ''; }).length;
+      }, 0);
       document.getElementById('statPP').textContent = ppData.length;
       document.getElementById('statItems').textContent = allItems;
       document.getElementById('statPO').textContent = completedOrPO;
@@ -411,26 +373,29 @@
     }
 
     function updateItemHistoryDatalist() {
-      const datalist = document.getElementById('itemHistoryList');
+      var datalist = document.getElementById('itemHistoryList');
       if (!datalist) return;
-      const names = new Set();
-      ppData.forEach(pp => {
-        (pp.items || []).forEach(i => {
-          if (i.nama_barang) names.add(i.nama_barang);
+      var names = {};
+      ppData.forEach(function(pp) {
+        (pp.items || []).forEach(function(i) {
+          if (i.nama_barang) names[i.nama_barang] = true;
         });
       });
-      datalist.innerHTML = Array.from(names).map(n => `<option value="${escapeHTML(n)}">`).join('');
+      var optionsHtml = '';
+      for (var n in names) {
+        optionsHtml += '<option value="' + escapeHTML(n) + '">';
+      }
+      datalist.innerHTML = optionsHtml;
     }
 
-    // Fitur Draft Otomatis
     function saveDraft() {
       try {
         if (document.getElementById('ppModal').classList.contains('hidden')) return;
-        const draft = {
+        var draft = {
           no_pp: document.getElementById('no_pp').value,
           tgl_pp: document.getElementById('tgl_pp').value,
-          items: Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(row => {
-            const statusEl = row.querySelector('[name="status"]');
+          items: Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(function(row) {
+            var statusEl = row.querySelector('[name="status"]');
             return {
               kode_barang: row.querySelector('[name="kode_barang"]').value,
               nama_barang: row.querySelector('[name="nama_barang"]').value,
@@ -451,16 +416,16 @@
 
     function restoreDraftIfAvailable() {
       try {
-        const raw = localStorage.getItem(DRAFT_KEY);
+        var raw = localStorage.getItem(DRAFT_KEY);
         if (!raw) return;
-        const draft = JSON.parse(raw);
+        var draft = JSON.parse(raw);
         if (!draft || !Array.isArray(draft.items) || !draft.items.length) return;
         if (confirm('Ditemukan draft PP yang belum selesai disimpan. Pulihkan draft tersebut?')) {
           document.getElementById('no_pp').value = draft.no_pp || '';
           document.getElementById('tgl_pp').value = draft.tgl_pp || '';
-          const container = document.getElementById('itemRowsContainer');
+          var container = document.getElementById('itemRowsContainer');
           container.innerHTML = '';
-          draft.items.forEach(item => addItemRow(item));
+          draft.items.forEach(function(item) { addItemRow(item); });
           document.getElementById('modalTitle').textContent = 'Pulihkan Draft PP';
           document.getElementById('ppModal').classList.remove('hidden');
         } else {
@@ -469,8 +434,7 @@
       } catch (err) { localStorage.removeItem(DRAFT_KEY); }
     }
 
-    // Inisialisasi
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function() {
       lucide.createIcons();
       document.getElementById('scriptUrlInput').value = scriptUrl;
       
@@ -488,18 +452,16 @@
       restoreDraftIfAvailable();
     });
 
-    // Helper untuk Reset Halaman dari Input Search & Filter
     function resetPageAndRender() {
       currentPage = 1;
       renderData();
     }
 
-    // Toggle View
     function setViewMode(mode) {
       currentViewMode = mode;
-      currentPage = 1; // Reset halaman
-      const gBtn = document.getElementById('viewGroupedBtn');
-      const fBtn = document.getElementById('viewFlatBtn');
+      currentPage = 1;
+      var gBtn = document.getElementById('viewGroupedBtn');
+      var fBtn = document.getElementById('viewFlatBtn');
       
       if (mode === 'grouped') {
         gBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-purple-600 text-white shadow';
@@ -522,17 +484,20 @@
       document.getElementById('ppModal').classList.remove('hidden');
       lucide.createIcons();
     }
+    
     function closeModal() { document.getElementById('ppModal').classList.add('hidden'); }
+    
     function openConfigModal() {
       document.getElementById('scriptUrlInput').value = scriptUrl;
       document.getElementById('configModal').classList.remove('hidden');
     }
+    
     function closeConfigModal() { document.getElementById('configModal').classList.add('hidden'); }
 
     function saveConfig() {
-      const url = document.getElementById('scriptUrlInput').value.trim();
+      var url = document.getElementById('scriptUrlInput').value.trim();
       if (url) {
-        try { const parsed = new URL(url); } catch (_) {
+        if (url.indexOf('http') !== 0) {
           showNotification('URL tidak valid.', 'error'); return;
         }
       }
@@ -543,86 +508,86 @@
       if (url) fetchFromSheets();
     }
 
-    // Dynamic Row
     function addItemRow(data) {
       data = data || {};
-      const container = document.getElementById('itemRowsContainer');
-      const rowIndex = container.children.length;
-      const row = document.createElement('div');
+      var container = document.getElementById('itemRowsContainer');
+      var rowIndex = container.children.length;
+      var row = document.createElement('div');
       row.className = "p-4 rounded-xl glass-card bg-slate-900/60 border border-slate-700/60 space-y-3 relative group";
       row.setAttribute('data-row-index', rowIndex);
-      const statusVal = data.status || 'Pending PR';
+      var statusVal = data.status || 'Pending PR';
 
-      row.innerHTML = `
-        <div class="flex justify-between items-center border-b border-slate-700/50 pb-2">
-          <span class="text-xs font-semibold text-purple-300">Barang #${rowIndex + 1}</span>
-          <div class="flex items-center space-x-2">
-            <button type="button" onclick="duplicateRow(this)" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1 bg-indigo-950/40 px-2 py-1 rounded border border-indigo-500/20">
-              <i data-lucide="copy" class="w-3 h-3"></i> Duplikat
-            </button>
-            ${rowIndex > 0 ? `
-              <button type="button" onclick="removeRowConfirm(this)" class="text-red-400 hover:text-red-300 transition text-xs flex items-center gap-1 bg-red-950/40 px-2 py-1 rounded border border-red-500/20">
-                <i data-lucide="trash-2" class="w-3 h-3"></i> Hapus
-              </button>
-            ` : ''}
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <div>
-            <label class="block text-[11px] font-medium text-slate-300 mb-1">Kode Barang</label>
-            <input type="text" name="kode_barang" value="${escapeHTML(data.kode_barang || '')}" placeholder="KDB-001" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-          </div>
-          <div class="sm:col-span-2">
-            <label class="block text-[11px] font-medium text-slate-300 mb-1">Nama Barang <span class="text-red-400">*</span></label>
-            <input type="text" name="nama_barang" list="itemHistoryList" required value="${escapeHTML(data.nama_barang || '')}" placeholder="Ketik atau pilih nama barang..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-          </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-300 mb-1">Qty PP <span class="text-red-400">*</span></label>
-            <input type="number" name="qty_pp" min="1" required value="${escapeHTML(data.qty_pp || 1)}" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-          </div>
-        </div>
+      var removeBtnHtml = '';
+      if (rowIndex > 0) {
+        removeBtnHtml = '<button type="button" onclick="removeRowConfirm(this)" class="text-red-400 hover:text-red-300 transition text-xs flex items-center gap-1 bg-red-950/40 px-2 py-1 rounded border border-red-500/20">' +
+          '<i data-lucide="trash-2" class="w-3 h-3"></i> Hapus' +
+        '</button>';
+      }
 
-        <div class="grid grid-cols-2 md:grid-cols-6 gap-3 pt-1">
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">No. PR</label>
-            <input type="text" name="no_pr" value="${escapeHTML(data.no_pr || '')}" placeholder="PR-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-          </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal PR</label>
-            <input type="date" name="tgl_pr" value="${escapeHTML(data.tgl_pr || '')}" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-          </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">No. PO</label>
-            <input type="text" name="no_po" value="${escapeHTML(data.no_po || '')}" placeholder="PO-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-          </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal PO</label>
-            <input type="date" name="tgl_po" value="${escapeHTML(data.tgl_po || '')}" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-          </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Qty PO</label>
-            <input type="number" name="qty_po" min="0" value="${escapeHTML(data.qty_po || 0)}" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-          </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Status Item</label>
-            <select name="status" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">
-              <option value="Pending PR" ${statusVal === 'Pending PR' ? 'selected' : ''}>Pending PR</option>
-              <option value="PR Issued" ${statusVal === 'PR Issued' ? 'selected' : ''}>PR Issued</option>
-              <option value="PO Issued" ${statusVal === 'PO Issued' ? 'selected' : ''}>PO Issued</option>
-              <option value="Partial Delivered" ${statusVal === 'Partial Delivered' ? 'selected' : ''}>Partial Delivered</option>
-              <option value="Completed" ${statusVal === 'Completed' ? 'selected' : ''}>Completed / Received</option>
-            </select>
-          </div>
-        </div>
-      `;
+      row.innerHTML = 
+        '<div class="flex justify-between items-center border-b border-slate-700/50 pb-2">' +
+          '<span class="text-xs font-semibold text-purple-300">Barang #' + (rowIndex + 1) + '</span>' +
+          '<div class="flex items-center space-x-2">' +
+            '<button type="button" onclick="duplicateRow(this)" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1 bg-indigo-950/40 px-2 py-1 rounded border border-indigo-500/20">' +
+              '<i data-lucide="copy" class="w-3 h-3"></i> Duplikat' +
+            '</button>' +
+            removeBtnHtml +
+          '</div>' +
+        '</div>' +
+        '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">' +
+          '<div>' +
+            '<label class="block text-[11px] font-medium text-slate-300 mb-1">Kode Barang</label>' +
+            '<input type="text" name="kode_barang" value="' + escapeHTML(data.kode_barang || '') + '" placeholder="KDB-001" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+          '</div>' +
+          '<div class="sm:col-span-2">' +
+            '<label class="block text-[11px] font-medium text-slate-300 mb-1">Nama Barang <span class="text-red-400">*</span></label>' +
+            '<input type="text" name="nama_barang" list="itemHistoryList" required value="' + escapeHTML(data.nama_barang || '') + '" placeholder="Ketik atau pilih nama barang..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-[11px] font-medium text-slate-300 mb-1">Qty PP <span class="text-red-400">*</span></label>' +
+            '<input type="number" name="qty_pp" min="1" required value="' + escapeHTML(data.qty_pp || 1) + '" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+          '</div>' +
+        '</div>' +
+        '<div class="grid grid-cols-2 md:grid-cols-6 gap-3 pt-1">' +
+          '<div>' +
+            '<label class="block text-[11px] font-medium text-slate-400 mb-1">No. PR</label>' +
+            '<input type="text" name="no_pr" value="' + escapeHTML(data.no_pr || '') + '" placeholder="PR-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal PR</label>' +
+            '<input type="date" name="tgl_pr" value="' + escapeHTML(data.tgl_pr || '') + '" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-[11px] font-medium text-slate-400 mb-1">No. PO</label>' +
+            '<input type="text" name="no_po" value="' + escapeHTML(data.no_po || '') + '" placeholder="PO-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal PO</label>' +
+            '<input type="date" name="tgl_po" value="' + escapeHTML(data.tgl_po || '') + '" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-[11px] font-medium text-slate-400 mb-1">Qty PO</label>' +
+            '<input type="number" name="qty_po" min="0" value="' + escapeHTML(data.qty_po || 0) + '" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-[11px] font-medium text-slate-400 mb-1">Status Item</label>' +
+            '<select name="status" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
+              '<option value="Pending PR" ' + (statusVal === 'Pending PR' ? 'selected' : '') + '>Pending PR</option>' +
+              '<option value="PR Issued" ' + (statusVal === 'PR Issued' ? 'selected' : '') + '>PR Issued</option>' +
+              '<option value="PO Issued" ' + (statusVal === 'PO Issued' ? 'selected' : '') + '>PO Issued</option>' +
+              '<option value="Partial Delivered" ' + (statusVal === 'Partial Delivered' ? 'selected' : '') + '>Partial Delivered</option>' +
+              '<option value="Completed" ' + (statusVal === 'Completed' ? 'selected' : '') + '>Completed / Received</option>' +
+            '</select>' +
+          '</div>' +
+        '</div>';
+
       container.appendChild(row);
       lucide.createIcons();
     }
 
     function duplicateRow(btn) {
-      const row = btn.closest('[data-row-index]');
-      const data = {
+      var row = btn.closest('[data-row-index]');
+      var data = {
         kode_barang: row.querySelector('[name="kode_barang"]').value,
         nama_barang: row.querySelector('[name="nama_barang"]').value,
         qty_pp: row.querySelector('[name="qty_pp"]').value,
@@ -631,7 +596,7 @@
         no_po: row.querySelector('[name="no_po"]').value,
         tgl_po: row.querySelector('[name="tgl_po"]').value,
         qty_po: row.querySelector('[name="qty_po"]').value,
-        status: row.querySelector('[name="status"]').value,
+        status: row.querySelector('[name="status"]').value
       };
       addItemRow(data);
       saveDraft();
@@ -647,46 +612,49 @@
     }
 
     function reindexRows() {
-      const container = document.getElementById('itemRowsContainer');
-      Array.from(container.children).forEach((row, idx) => {
+      var container = document.getElementById('itemRowsContainer');
+      Array.from(container.children).forEach(function(row, idx) {
         row.setAttribute('data-row-index', idx);
-        const title = row.querySelector('.text-purple-300');
-        if (title) title.textContent = `Barang #${idx + 1}`;
+        var title = row.querySelector('.text-purple-300');
+        if (title) title.textContent = 'Barang #' + (idx + 1);
       });
     }
 
-    // Submit PP
     async function handleFormSubmit(e) {
       e.preventDefault();
-      const editIndex = parseInt(document.getElementById('editIndex').value);
-      const no_pp = document.getElementById('no_pp').value.trim();
-      const tgl_pp = document.getElementById('tgl_pp').value;
+      var editIndex = parseInt(document.getElementById('editIndex').value);
+      var no_pp = document.getElementById('no_pp').value.trim();
+      var tgl_pp = document.getElementById('tgl_pp').value;
 
-      const items = Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(row => ({
-        kode_barang: row.querySelector('[name="kode_barang"]').value.trim(),
-        nama_barang: row.querySelector('[name="nama_barang"]').value.trim(),
-        qty_pp: parseFloat(row.querySelector('[name="qty_pp"]').value) || 0,
-        no_pr: row.querySelector('[name="no_pr"]').value.trim(),
-        tgl_pr: row.querySelector('[name="tgl_pr"]').value,
-        no_po: row.querySelector('[name="no_po"]').value.trim(),
-        tgl_po: row.querySelector('[name="tgl_po"]').value,
-        qty_po: parseFloat(row.querySelector('[name="qty_po"]').value) || 0,
-        status: row.querySelector('[name="status"]').value
-      }));
+      var items = Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(function(row) {
+        return {
+          kode_barang: row.querySelector('[name="kode_barang"]').value.trim(),
+          nama_barang: row.querySelector('[name="nama_barang"]').value.trim(),
+          qty_pp: parseFloat(row.querySelector('[name="qty_pp"]').value) || 0,
+          no_pr: row.querySelector('[name="no_pr"]').value.trim(),
+          tgl_pr: row.querySelector('[name="tgl_pr"]').value,
+          no_po: row.querySelector('[name="no_po"]').value.trim(),
+          tgl_po: row.querySelector('[name="tgl_po"]').value,
+          qty_po: parseFloat(row.querySelector('[name="qty_po"]').value) || 0,
+          status: row.querySelector('[name="status"]').value
+        };
+      });
 
       if (!tgl_pp) { showNotification('Tanggal PP wajib diisi.', 'error'); return; }
-      if (!items.length || items.some(i => !i.nama_barang || !Number.isFinite(i.qty_pp) || i.qty_pp < 1)) {
+      if (!items.length || items.some(function(i) { return !i.nama_barang || !Number.isFinite(i.qty_pp) || i.qty_pp < 1; })) {
         showNotification('Periksa nama barang dan jumlah Qty PP/PO.', 'error'); return;
       }
 
-      const duplicate = ppData.some((pp, idx) => idx !== editIndex && no_pp && pp.no_pp.trim().toLowerCase() === no_pp.toLowerCase());
+      var duplicate = ppData.some(function(pp, idx) {
+        return idx !== editIndex && no_pp && pp.no_pp.trim().toLowerCase() === no_pp.toLowerCase();
+      });
       if (duplicate) {
         showNotification('Nomor PP sudah digunakan.', 'error');
         document.getElementById('no_pp').focus();
         return;
       }
 
-      const record = { no_pp: no_pp, tgl_pp: tgl_pp, items: items };
+      var record = { no_pp: no_pp, tgl_pp: tgl_pp, items: items };
       if (editIndex >= 0) ppData[editIndex] = record; else ppData.unshift(record);
 
       saveLocalData();
@@ -699,16 +667,19 @@
     }
 
     function editPP(index) {
-      const itemData = ppData[index];
+      var itemData = ppData[index];
       if (!itemData) return;
       document.getElementById('editIndex').value = index;
       document.getElementById('no_pp').value = itemData.no_pp;
       document.getElementById('tgl_pp').value = itemData.tgl_pp;
       document.getElementById('modalTitle').textContent = "Edit Dokumen PP: " + (itemData.no_pp || 'Auto');
-      const container = document.getElementById('itemRowsContainer');
+      var container = document.getElementById('itemRowsContainer');
       container.innerHTML = "";
-      if (itemData.items && itemData.items.length > 0) itemData.items.forEach(itm => addItemRow(itm));
-      else addItemRow();
+      if (itemData.items && itemData.items.length > 0) {
+        itemData.items.forEach(function(itm) { addItemRow(itm); });
+      } else {
+        addItemRow();
+      }
       document.getElementById('ppModal').classList.remove('hidden');
       lucide.createIcons();
     }
@@ -722,236 +693,229 @@
       if (scriptUrl) await syncToSheets();
     }
 
-    // Format & Render Table + Pagination Logic
     function getStatusBadge(status, hasPO) {
-      const st = status || (hasPO ? 'PO Issued' : 'Pending PR');
+      var st = status || (hasPO ? 'PO Issued' : 'Pending PR');
       switch(st) {
-        case 'Completed': return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Completed</span>`;
-        case 'Partial Delivered': return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Partial Order</span>`;
-        case 'PO Issued': return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">PO Issued</span>`;
-        case 'PR Issued': return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">PR Issued</span>`;
-        default: return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-700 text-slate-300 border border-slate-600">Pending PR</span>`;
+        case 'Completed': return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Completed</span>';
+        case 'Partial Delivered': return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Partial Order</span>';
+        case 'PO Issued': return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">PO Issued</span>';
+        case 'PR Issued': return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">PR Issued</span>';
+        default: return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-700 text-slate-300 border border-slate-600">Pending PR</span>';
       }
     }
 
     function renderData() {
-      const container = document.getElementById('tableContainer');
-      const pagContainer = document.getElementById('paginationContainer');
-      const query = document.getElementById('searchInput').value.toLowerCase().trim();
-      const statusFilterEl = document.getElementById('statusFilter');
-      const statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
+      var container = document.getElementById('tableContainer');
+      var pagContainer = document.getElementById('paginationContainer');
+      var query = document.getElementById('searchInput').value.toLowerCase().trim();
+      var statusFilterEl = document.getElementById('statusFilter');
+      var statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
       updateStats();
 
-      const filtered = ppData.filter(pp => {
-        const items = Array.isArray(pp.items) ? pp.items : [];
-        const matchHeader = String(pp.no_pp || '').toLowerCase().includes(query) || String(pp.tgl_pp || '').includes(query);
-        const matchItem = items.some(i =>
-          String(i.kode_barang || '').toLowerCase().includes(query) ||
-          String(i.nama_barang || '').toLowerCase().includes(query) ||
-          String(i.no_pr || '').toLowerCase().includes(query) ||
-          String(i.no_po || '').toLowerCase().includes(query)
-        );
-        let statusMatch = true;
-        if (statusFilter === 'pending') statusMatch = items.some(i => i.status === 'Pending PR' || i.status === 'PR Issued');
-        else if (statusFilter === 'po_issued') statusMatch = items.some(i => i.status === 'PO Issued' || i.status === 'Partial Delivered');
-        else if (statusFilter === 'completed') statusMatch = items.length > 0 && items.every(i => i.status === 'Completed' || i.no_po);
+      var filtered = ppData.filter(function(pp) {
+        var items = Array.isArray(pp.items) ? pp.items : [];
+        var matchHeader = String(pp.no_pp || '').toLowerCase().indexOf(query) !== -1 || String(pp.tgl_pp || '').indexOf(query) !== -1;
+        var matchItem = items.some(function(i) {
+          return String(i.kode_barang || '').toLowerCase().indexOf(query) !== -1 ||
+                 String(i.nama_barang || '').toLowerCase().indexOf(query) !== -1 ||
+                 String(i.no_pr || '').toLowerCase().indexOf(query) !== -1 ||
+                 String(i.no_po || '').toLowerCase().indexOf(query) !== -1;
+        });
+        var statusMatch = true;
+        if (statusFilter === 'pending') statusMatch = items.some(function(i) { return i.status === 'Pending PR' || i.status === 'PR Issued'; });
+        else if (statusFilter === 'po_issued') statusMatch = items.some(function(i) { return i.status === 'PO Issued' || i.status === 'Partial Delivered'; });
+        else if (statusFilter === 'completed') statusMatch = items.length > 0 && items.every(function(i) { return i.status === 'Completed' || i.no_po; });
         return (matchHeader || matchItem) && statusMatch;
       });
 
       if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-12 text-slate-400">
-            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 opacity-40"></i>
-            <p class="text-base font-medium">Belum ada data PP ditemukan</p>
-            <p class="text-xs text-slate-500 mt-1">Ubah kata kunci/filter atau klik "Buat PP Baru".</p>
-          </div>`;
-        if(pagContainer) pagContainer.innerHTML = '';
+        container.innerHTML = 
+          '<div class="text-center py-12 text-slate-400">' +
+            '<i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 opacity-40"></i>' +
+            '<p class="text-base font-medium">Belum ada data PP ditemukan</p>' +
+            '<p class="text-xs text-slate-500 mt-1">Ubah kata kunci/filter atau klik "Buat PP Baru".</p>' +
+          '</div>';
+        if (pagContainer) pagContainer.innerHTML = '';
         lucide.createIcons();
         return;
       }
 
-      let paginatedData = filtered;
+      var paginatedData = filtered;
       if (rowsPerPage !== 'all') {
-        const totalPages = Math.ceil(filtered.length / rowsPerPage);
+        var totalPages = Math.ceil(filtered.length / rowsPerPage);
         if (currentPage > totalPages) currentPage = totalPages;
         if (currentPage < 1) currentPage = 1;
-        const startIndex = (currentPage - 1) * rowsPerPage;
+        var startIndex = (currentPage - 1) * rowsPerPage;
         paginatedData = filtered.slice(startIndex, startIndex + parseInt(rowsPerPage));
       }
 
-      if (currentViewMode === 'grouped') renderGroupedView(container, paginatedData, filtered);
+      if (currentViewMode === 'grouped') renderGroupedView(container, paginatedData);
       else renderFlatView(container, paginatedData);
       
       renderPaginationControls(filtered.length);
       lucide.createIcons();
     }
 
-    function renderGroupedView(container, data, filteredFullData) {
-      let html = `
-        <table class="w-full text-left text-xs border-collapse min-w-[700px]">
-          <thead>
-            <tr class="border-b border-white/10 text-slate-300 bg-slate-900/50 uppercase tracking-wider">
-              <th class="py-3.5 px-4 w-1/4">No. PP</th>
-              <th class="py-3.5 px-4 w-1/6">Tanggal PP</th>
-              <th class="py-3.5 px-4 w-1/6">Total Item</th>
-              <th class="py-3.5 px-4 w-1/4">Progres PO</th>
-              <th class="py-3.5 px-4 text-right no-print w-1/6">Aksi</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-      `;
-      data.forEach(pp => {
-        // Cari indeks aslinya dari array ppData utama
-        const globalIdx = ppData.findIndex(p => p === pp);
-        const totalItems = pp.items.length;
-        const totalPO = pp.items.filter(i => i.no_po).length;
-        const isComplete = totalPO === totalItems && totalItems > 0;
+    function renderGroupedView(container, data) {
+      var html = '<table class="w-full text-left text-xs border-collapse min-w-[700px]">' +
+        '<thead>' +
+          '<tr class="border-b border-white/10 text-slate-300 bg-slate-900/50 uppercase tracking-wider">' +
+            '<th class="py-3.5 px-4 w-1/4">No. PP</th>' +
+            '<th class="py-3.5 px-4 w-1/6">Tanggal PP</th>' +
+            '<th class="py-3.5 px-4 w-1/6">Total Item</th>' +
+            '<th class="py-3.5 px-4 w-1/4">Progres PO</th>' +
+            '<th class="py-3.5 px-4 text-right no-print w-1/6">Aksi</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody class="divide-y divide-white/5">';
 
-        html += `
-          <tr class="hover:bg-white/5 transition group">
-            <td class="py-3.5 px-4 font-bold text-white flex items-center gap-2">
-              <i data-lucide="file-check" class="w-4 h-4 text-purple-400"></i> ${escapeHTML(pp.no_pp || '(Auto-Urut)')}
-            </td>
-            <td class="py-3.5 px-4 text-slate-300">${escapeHTML(pp.tgl_pp)}</td>
-            <td class="py-3.5 px-4 text-slate-300 font-medium">${totalItems} Item</td>
-            <td class="py-3.5 px-4">
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold ${isComplete ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
-                ${totalPO} / ${totalItems} PO Ready
-              </span>
-            </td>
-            <td class="py-3.5 px-4 text-right space-x-2 no-print">
-              <button onclick="editPP(${globalIdx})" class="p-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 transition" title="Edit PP"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-              <button onclick="deletePP(${globalIdx})" class="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-300 transition" title="Hapus PP"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-            </td>
-          </tr>
-          <tr class="bg-slate-950/40">
-            <td colspan="5" class="px-6 py-3">
-              <div class="border-l-2 border-purple-500/40 pl-4 space-y-2">
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rincian Barang & Outstanding:</p>
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-2">
-                  ${pp.items.map(itm => {
-                    const outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
-                    const prText = itm.no_pr ? `${escapeHTML(itm.no_pr)}${itm.tgl_pr ? ` (${escapeHTML(itm.tgl_pr)})` : ''}` : '-';
-                    const poText = itm.no_po ? `${escapeHTML(itm.no_po)}${itm.tgl_po ? ` (${escapeHTML(itm.tgl_po)})` : ''}` : '-';
-                    return `
-                    <div class="p-2.5 rounded-lg bg-slate-900/60 border border-white/5 flex justify-between items-center text-xs gap-4">
-                      <div class="flex-1 truncate">
-                        <p class="font-medium text-slate-200 truncate">${escapeHTML(itm.nama_barang)} <span class="text-slate-400">(${escapeHTML(itm.kode_barang || '-')})</span></p>
-                        <p class="text-[10px] text-slate-400 mt-0.5 truncate">
-                          Qty PP: <b class="text-white">${itm.qty_pp}</b> | PR: ${prText} \vert{} PO:${poText} (Qty: ${itm.qty_po \vert{}\vert{} 0})${outstanding > 0 ? `<span class="text-amber-400 font-semibold ml-1">| Sisa: ${outstanding}</span>` : ''}
-                        </p>
-                      </div>
-                      <div class="shrink-0">${getStatusBadge(itm.status, !!itm.no_po)}</div>
-                    </div>`
-                  }).join('')}
-                </div>
-              </div>
-            </td>
-          </tr>
-        `;
+      data.forEach(function(pp) {
+        var globalIdx = ppData.findIndex(function(p) { return p === pp; });
+        var totalItems = pp.items.length;
+        var totalPO = pp.items.filter(function(i) { return i.no_po; }).length;
+        var isComplete = totalPO === totalItems && totalItems > 0;
+
+        var itemsHtml = '';
+        pp.items.forEach(function(itm) {
+          var outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
+          var prText = itm.no_pr ? escapeHTML(itm.no_pr) + (itm.tgl_pr ? ' (' + escapeHTML(itm.tgl_pr) + ')' : '') : '-';
+          var poText = itm.no_po ? escapeHTML(itm.no_po) + (itm.tgl_po ? ' (' + escapeHTML(itm.tgl_po) + ')' : '') : '-';
+          var sisaHtml = outstanding > 0 ? '<span class="text-amber-400 font-semibold ml-1">| Sisa: ' + outstanding + '</span>' : '';
+
+          itemsHtml += '<div class="p-2.5 rounded-lg bg-slate-900/60 border border-white/5 flex justify-between items-center text-xs gap-4">' +
+            '<div class="flex-1 truncate">' +
+              '<p class="font-medium text-slate-200 truncate">' + escapeHTML(itm.nama_barang) + ' <span class="text-slate-400">(' + escapeHTML(itm.kode_barang || '-') + ')</span></p>' +
+              '<p class="text-[10px] text-slate-400 mt-0.5 truncate">' +
+                'Qty PP: <b class="text-white">' + itm.qty_pp + '</b> | PR: ' + prText + ' | PO: ' + poText + ' (Qty: ' + (itm.qty_po || 0) + ')' + sisaHtml +
+              '</p>' +
+            '</div>' +
+            '<div class="shrink-0">' + getStatusBadge(itm.status, !!itm.no_po) + '</div>' +
+          '</div>';
+        });
+
+        html += '<tr class="hover:bg-white/5 transition group">' +
+          '<td class="py-3.5 px-4 font-bold text-white flex items-center gap-2">' +
+            '<i data-lucide="file-check" class="w-4 h-4 text-purple-400"></i> ' + escapeHTML(pp.no_pp || '(Auto-Urut)') +
+          '</td>' +
+          '<td class="py-3.5 px-4 text-slate-300">' + escapeHTML(pp.tgl_pp) + '</td>' +
+          '<td class="py-3.5 px-4 text-slate-300 font-medium">' + totalItems + ' Item</td>' +
+          '<td class="py-3.5 px-4">' +
+            '<span class="px-2.5 py-1 rounded-full text-[10px] font-semibold ' + (isComplete ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30') + '">' +
+              totalPO + ' / ' + totalItems + ' PO Ready' +
+            '</span>' +
+          '</td>' +
+          '<td class="py-3.5 px-4 text-right space-x-2 no-print">' +
+            '<button onclick="editPP(' + globalIdx + ')" class="p-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 transition" title="Edit PP"><i data-lucide="edit-3" class="w-4 h-4"></i></button>' +
+            '<button onclick="deletePP(' + globalIdx + ')" class="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-300 transition" title="Hapus PP"><i data-lucide="trash-2" class="w-4 h-4"></i></button>' +
+          '</td>' +
+        '</tr>' +
+        '<tr class="bg-slate-950/40">' +
+          '<td colspan="5" class="px-6 py-3">' +
+            '<div class="border-l-2 border-purple-500/40 pl-4 space-y-2">' +
+              '<p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rincian Barang & Outstanding:</p>' +
+              '<div class="grid grid-cols-1 xl:grid-cols-2 gap-2">' +
+                itemsHtml +
+              '</div>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
       });
-      html += `</tbody></table>`;
+
+      html += '</tbody></table>';
       container.innerHTML = html;
     }
 
     function renderFlatView(container, data) {
-      let html = `
-        <table class="w-full text-left text-xs border-collapse min-w-[1000px]">
-          <thead>
-            <tr class="border-b border-white/10 text-slate-300 bg-slate-900/50 uppercase tracking-wider">
-              <th class="py-3.5 px-3">No. PP</th>
-              <th class="py-3.5 px-3">Tgl PP</th>
-              <th class="py-3.5 px-3">Kode</th>
-              <th class="py-3.5 px-3">Nama Barang</th>
-              <th class="py-3.5 px-3">Qty PP</th>
-              <th class="py-3.5 px-3">No. PR</th>
-              <th class="py-3.5 px-3 border-l border-white/10">Tgl PR</th>
-              <th class="py-3.5 px-3">No. PO</th>
-              <th class="py-3.5 px-3 border-l border-white/10">Tgl PO</th>
-              <th class="py-3.5 px-3">Qty PO</th>
-              <th class="py-3.5 px-3">Sisa</th>
-              <th class="py-3.5 px-3">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-      `;
-      data.forEach(pp => {
-        pp.items.forEach(itm => {
-          const outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
-          html += `
-            <tr class="hover:bg-white/5 transition">
-              <td class="py-3 px-3 font-semibold text-purple-300 whitespace-nowrap">${escapeHTML(pp.no_pp || '(Auto)')}</td>
-              <td class="py-3 px-3 text-slate-400 whitespace-nowrap">${escapeHTML(pp.tgl_pp)}</td>
-              <td class="py-3 px-3 text-slate-300 whitespace-nowrap">${escapeHTML(itm.kode_barang || '-')}</td>
-              <td class="py-3 px-3 font-medium text-white">${escapeHTML(itm.nama_barang)}</td>
-              <td class="py-3 px-3 font-bold text-slate-200">${itm.qty_pp}</td>
-              <td class="py-3 px-3 text-slate-300 whitespace-nowrap">${escapeHTML(itm.no_pr || '-')}</td>
-              <td class="py-3 px-3 text-slate-400 border-l border-white/10 whitespace-nowrap">${escapeHTML(itm.tgl_pr || '-')}</td>
-              <td class="py-3 px-3 text-slate-300 whitespace-nowrap">${escapeHTML(itm.no_po || '-')}</td>
-              <td class="py-3 px-3 text-slate-400 border-l border-white/10 whitespace-nowrap">${escapeHTML(itm.tgl_po || '-')}</td>
-              <td class="py-3 px-3 font-bold text-emerald-400">${itm.qty_po || 0}</td>
-              <td class="py-3 px-3 font-semibold ${outstanding > 0 ? 'text-amber-400' : 'text-slate-500'}">${outstanding}</td>
-              <td class="py-3 px-3">${getStatusBadge(itm.status, !!itm.no_po)}</td>
-            </tr>
-          `;
+      var html = '<table class="w-full text-left text-xs border-collapse min-w-[1000px]">' +
+        '<thead>' +
+          '<tr class="border-b border-white/10 text-slate-300 bg-slate-900/50 uppercase tracking-wider">' +
+            '<th class="py-3.5 px-3">No. PP</th>' +
+            '<th class="py-3.5 px-3">Tgl PP</th>' +
+            '<th class="py-3.5 px-3">Kode</th>' +
+            '<th class="py-3.5 px-3">Nama Barang</th>' +
+            '<th class="py-3.5 px-3">Qty PP</th>' +
+            '<th class="py-3.5 px-3">No. PR</th>' +
+            '<th class="py-3.5 px-3 border-l border-white/10">Tgl PR</th>' +
+            '<th class="py-3.5 px-3">No. PO</th>' +
+            '<th class="py-3.5 px-3 border-l border-white/10">Tgl PO</th>' +
+            '<th class="py-3.5 px-3">Qty PO</th>' +
+            '<th class="py-3.5 px-3">Sisa</th>' +
+            '<th class="py-3.5 px-3">Status</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody class="divide-y divide-white/5">';
+
+      data.forEach(function(pp) {
+        pp.items.forEach(function(itm) {
+          var outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
+          html += '<tr class="hover:bg-white/5 transition">' +
+            '<td class="py-3 px-3 font-semibold text-purple-300 whitespace-nowrap">' + escapeHTML(pp.no_pp || '(Auto)') + '</td>' +
+            '<td class="py-3 px-3 text-slate-400 whitespace-nowrap">' + escapeHTML(pp.tgl_pp) + '</td>' +
+            '<td class="py-3 px-3 text-slate-300 whitespace-nowrap">' + escapeHTML(itm.kode_barang || '-') + '</td>' +
+            '<td class="py-3 px-3 font-medium text-white">' + escapeHTML(itm.nama_barang) + '</td>' +
+            '<td class="py-3 px-3 font-bold text-slate-200">' + itm.qty_pp + '</td>' +
+            '<td class="py-3 px-3 text-slate-300 whitespace-nowrap">' + escapeHTML(itm.no_pr || '-') + '</td>' +
+            '<td class="py-3 px-3 text-slate-400 border-l border-white/10 whitespace-nowrap">' + escapeHTML(itm.tgl_pr || '-') + '</td>' +
+            '<td class="py-3 px-3 text-slate-300 whitespace-nowrap">' + escapeHTML(itm.no_po || '-') + '</td>' +
+            '<td class="py-3 px-3 text-slate-400 border-l border-white/10 whitespace-nowrap">' + escapeHTML(itm.tgl_po || '-') + '</td>' +
+            '<td class="py-3 px-3 font-bold text-emerald-400">' + (itm.qty_po || 0) + '</td>' +
+            '<td class="py-3 px-3 font-semibold ' + (outstanding > 0 ? 'text-amber-400' : 'text-slate-500') + '">' + outstanding + '</td>' +
+            '<td class="py-3 px-3">' + getStatusBadge(itm.status, !!itm.no_po) + '</td>' +
+          '</tr>';
         });
       });
-      html += `</tbody></table>`;
+
+      html += '</tbody></table>';
       container.innerHTML = html;
     }
 
-    // UI Pagination Controls
     function renderPaginationControls(totalItems) {
-      const container = document.getElementById('paginationContainer');
+      var container = document.getElementById('paginationContainer');
       if (!container) return;
 
       if (rowsPerPage === 'all' || totalItems <= rowsPerPage) {
-        container.innerHTML = `
-          <div class="flex justify-between items-center text-xs text-slate-400">
-            <span>Menampilkan semua <b>${totalItems}</b> dokumen</span>
-            <select onchange="changeRowsPerPage(this.value)" class="glass-input rounded-lg px-2 py-1.5 border border-slate-700/50 cursor-pointer outline-none">
-              <option value="10" ${rowsPerPage == 10 ? 'selected' : ''}>10 / halaman</option>
-              <option value="25" ${rowsPerPage == 25 ? 'selected' : ''}>25 / halaman</option>
-              <option value="50" ${rowsPerPage == 50 ? 'selected' : ''}>50 / halaman</option>
-              <option value="all" ${rowsPerPage === 'all' ? 'selected' : ''}>Semua</option>
-            </select>
-          </div>`;
+        container.innerHTML = 
+          '<div class="flex justify-between items-center text-xs text-slate-400">' +
+            '<span>Menampilkan semua <b>' + totalItems + '</b> dokumen</span>' +
+            '<select onchange="changeRowsPerPage(this.value)" class="glass-input rounded-lg px-2 py-1.5 border border-slate-700/50 cursor-pointer outline-none">' +
+              '<option value="10" ' + (rowsPerPage == 10 ? 'selected' : '') + '>10 / halaman</option>' +
+              '<option value="25" ' + (rowsPerPage == 25 ? 'selected' : '') + '>25 / halaman</option>' +
+              '<option value="50" ' + (rowsPerPage == 50 ? 'selected' : '') + '>50 / halaman</option>' +
+              '<option value="all" ' + (rowsPerPage === 'all' ? 'selected' : '') + '>Semua</option>' +
+            '</select>' +
+          '</div>';
         return;
       }
 
-      const totalPages = Math.ceil(totalItems / rowsPerPage);
-      const startItem = (currentPage - 1) * rowsPerPage + 1;
-      const endItem = Math.min(currentPage * rowsPerPage, totalItems);
+      var totalPages = Math.ceil(totalItems / rowsPerPage);
+      var startItem = (currentPage - 1) * rowsPerPage + 1;
+      var endItem = Math.min(currentPage * rowsPerPage, totalItems);
 
-      container.innerHTML = `
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
-          <div class="flex items-center gap-3 text-slate-400">
-            <span>Menampilkan <b class="text-white">${startItem}-${endItem}</b> dari <b class="text-white">${totalItems}</b> dokumen</span>
-            <select onchange="changeRowsPerPage(this.value)" class="glass-input rounded-lg px-2 py-1.5 border border-slate-700/50 cursor-pointer outline-none">
-              <option value="10" ${rowsPerPage == 10 ? 'selected' : ''}>10 / halaman</option>
-              <option value="25" ${rowsPerPage == 25 ? 'selected' : ''}>25 / halaman</option>
-              <option value="50" ${rowsPerPage == 50 ? 'selected' : ''}>50 / halaman</option>
-              <option value="all" ${rowsPerPage === 'all' ? 'selected' : ''}>Semua</option>
-            </select>
-          </div>
-          
-          <div class="flex items-center space-x-1.5 bg-slate-900/50 p-1 rounded-xl border border-white/5">
-            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} 
-              class="px-3 py-1.5 rounded-lg font-medium transition ${currentPage === 1 ? 'text-slate-600 bg-transparent cursor-not-allowed' : 'text-slate-300 hover:bg-slate-800'}">
-              Sebelumnya
-            </button>
-            
-            <span class="px-3.5 py-1.5 text-white font-bold bg-purple-600 rounded-lg shadow-md border border-purple-500/30">
-              ${currentPage} <span class="text-purple-300 text-[10px] font-normal ml-0.5">/ ${totalPages}</span>
-            </span>
-            
-            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} 
-              class="px-3 py-1.5 rounded-lg font-medium transition ${currentPage === totalPages ? 'text-slate-600 bg-transparent cursor-not-allowed' : 'text-slate-300 hover:bg-slate-800'}">
-              Selanjutnya
-            </button>
-          </div>
-        </div>
-      `;
+      container.innerHTML = 
+        '<div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">' +
+          '<div class="flex items-center gap-3 text-slate-400">' +
+            '<span>Menampilkan <b class="text-white">' + startItem + '-' + endItem + '</b> dari <b class="text-white">' + totalItems + '</b> dokumen</span>' +
+            '<select onchange="changeRowsPerPage(this.value)" class="glass-input rounded-lg px-2 py-1.5 border border-slate-700/50 cursor-pointer outline-none">' +
+              '<option value="10" ' + (rowsPerPage == 10 ? 'selected' : '') + '>10 / halaman</option>' +
+              '<option value="25" ' + (rowsPerPage == 25 ? 'selected' : '') + '>25 / halaman</option>' +
+              '<option value="50" ' + (rowsPerPage == 50 ? 'selected' : '') + '>50 / halaman</option>' +
+              '<option value="all" ' + (rowsPerPage === 'all' ? 'selected' : '') + '>Semua</option>' +
+            '</select>' +
+          '</div>' +
+          '<div class="flex items-center space-x-1.5 bg-slate-900/50 p-1 rounded-xl border border-white/5">' +
+            '<button onclick="changePage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + ' ' +
+              'class="px-3 py-1.5 rounded-lg font-medium transition ' + (currentPage === 1 ? 'text-slate-600 bg-transparent cursor-not-allowed' : 'text-slate-300 hover:bg-slate-800') + '">' +
+              'Sebelumnya' +
+            '</button>' +
+            '<span class="px-3.5 py-1.5 text-white font-bold bg-purple-600 rounded-lg shadow-md border border-purple-500/30">' +
+              currentPage + ' <span class="text-purple-300 text-[10px] font-normal ml-0.5">/ ' + totalPages + '</span>' +
+            '</span>' +
+            '<button onclick="changePage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + ' ' +
+              'class="px-3 py-1.5 rounded-lg font-medium transition ' + (currentPage === totalPages ? 'text-slate-600 bg-transparent cursor-not-allowed' : 'text-slate-300 hover:bg-slate-800') + '">' +
+              'Selanjutnya' +
+            '</button>' +
+          '</div>' +
+        '</div>';
     }
 
     function changePage(page) {
@@ -965,45 +929,43 @@
       renderData();
     }
 
-    // Export CSV
     function exportCSV() {
       if (!ppData.length) { showNotification("Tidak ada data untuk diexport.", "error"); return; }
-      const separator = ";"; 
-      let csv = ["No PP", "Tanggal PP", "Kode Barang", "Nama Barang", "Qty PP", "No PR", "Tanggal PR", "No PO", "Tanggal PO", "Qty PO", "Qty Outstanding", "Status"].join(separator) + "\n";
-      const formatCell = (text) => `"${String(text || '').replace(/"/g, '""')}"`;
+      var separator = ";"; 
+      var csv = ["No PP", "Tanggal PP", "Kode Barang", "Nama Barang", "Qty PP", "No PR", "Tanggal PR", "No PO", "Tanggal PO", "Qty PO", "Qty Outstanding", "Status"].join(separator) + "\n";
+      var formatCell = function(text) { return '"' + String(text || '').replace(/"/g, '""') + '"'; };
 
-      ppData.forEach(pp => {
-        (pp.items || []).forEach(i => {
-          const outstanding = Math.max(0, i.qty_pp - (i.qty_po || 0));
+      ppData.forEach(function(pp) {
+        (pp.items || []).forEach(function(i) {
+          var outstanding = Math.max(0, i.qty_pp - (i.qty_po || 0));
           csv += [formatCell(pp.no_pp), formatCell(pp.tgl_pp), formatCell(i.kode_barang), formatCell(i.nama_barang), i.qty_pp || 0,
                   formatCell(i.no_pr), formatCell(i.tgl_pr), formatCell(i.no_po), formatCell(i.tgl_po), i.qty_po || 0, outstanding, formatCell(i.status)
           ].join(separator) + "\n";
         });
       });
-      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
+      var blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      var link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Rekap_PP_${new Date().toISOString().slice(0,10)}.csv`;
+      link.download = "Rekap_PP_" + new Date().toISOString().slice(0,10) + ".csv";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       showNotification("File CSV berhasil diunduh!", "success");
     }
 
-    // Google Sheets Sync Logic
     async function fetchFromSheets() {
       if (!scriptUrl) { setSyncStatus('Google Sheets belum dikonfigurasi.'); return false; }
-      const icon = document.getElementById('refresh-icon');
+      var icon = document.getElementById('refresh-icon');
       if (icon) icon.classList.add('animate-spin');
       try {
         setSyncStatus('Mengambil data dari Google Sheets…');
-        const res = await fetch(`${scriptUrl}?action=read&_=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const result = await res.json();
+        var res = await fetch(scriptUrl + '?action=read&_=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var result = await res.json();
         if (!result || result.status !== 'success' || !Array.isArray(result.records)) throw new Error((result && result.message) || 'Format tidak sesuai.');
         
-        const remote = normalizeRecords(result.records);
-        const localHasData = ppData.some(pp => pp.no_pp || (pp.items || []).length);
+        var remote = normalizeRecords(result.records);
+        var localHasData = ppData.some(function(pp) { return pp.no_pp || (pp.items || []).length; });
         if (remote.length === 0 && localHasData) {
           if (!confirm('Server Google Sheets kosong. Tetap muat data kosong dan timpa data lokal?')) {
             setSyncStatus('Sinkronisasi dibatalkan; data lokal dipertahankan.'); return false;
@@ -1027,12 +989,16 @@
     }
 
     function stableDataString(records) {
-      return JSON.stringify(normalizeRecords(records).map(pp => ({
-        no_pp: pp.no_pp, tgl_pp: pp.tgl_pp, items: pp.items.map(i => ({
-          kode_barang: i.kode_barang, nama_barang: i.nama_barang, qty_pp: Number(i.qty_pp) || 0,
-          no_pr: i.no_pr, tgl_pr: i.tgl_pr, no_po: i.no_po, tgl_po: i.tgl_po, qty_po: Number(i.qty_po) || 0, status: i.status || 'Pending PR'
-        }))
-      })).sort((a,b) => a.no_pp.localeCompare(b.no_pp)));
+      return JSON.stringify(normalizeRecords(records).map(function(pp) {
+        return {
+          no_pp: pp.no_pp, tgl_pp: pp.tgl_pp, items: pp.items.map(function(i) {
+            return {
+              kode_barang: i.kode_barang, nama_barang: i.nama_barang, qty_pp: Number(i.qty_pp) || 0,
+              no_pr: i.no_pr, tgl_pr: i.tgl_pr, no_po: i.no_po, tgl_po: i.tgl_po, qty_po: Number(i.qty_po) || 0, status: i.status || 'Pending PR'
+            };
+          })
+        };
+      }).sort(function(a,b) { return a.no_pp.localeCompare(b.no_pp); }));
     }
 
     async function syncToSheets() {
@@ -1041,14 +1007,14 @@
       isSyncing = true;
       setSyncStatus('Mengirim data ke Google Sheets…');
       try {
-        const payloadRecords = normalizeRecords(ppData);
-        if (payloadRecords.some(pp => !String(pp.no_pp || '').trim())) {
-          const nextRes = await fetch(`${scriptUrl}?action=get_next_pp&_=${Date.now()}`, { cache: 'no-store' });
+        var payloadRecords = normalizeRecords(ppData);
+        if (payloadRecords.some(function(pp) { return !String(pp.no_pp || '').trim(); })) {
+          var nextRes = await fetch(scriptUrl + '?action=get_next_pp&_=' + Date.now(), { cache: 'no-store' });
           if (!nextRes.ok) throw new Error('Tidak bisa mengambil nomor PP server.');
-          const nextJson = await nextRes.json();
-          const matchNo = String(nextJson && nextJson.next_no_pp).match(/(\d+)$/);
-          let nextNumber = parseInt(matchNo ? matchNo[1] : '1', 10);
-          payloadRecords.forEach(pp => {
+          var nextJson = await nextRes.json();
+          var matchNo = String(nextJson && nextJson.next_no_pp).match(/(\d+)$/);
+          var nextNumber = parseInt(matchNo ? matchNo[1] : '1', 10);
+          payloadRecords.forEach(function(pp) {
             if (!String(pp.no_pp || '').trim()) {
               pp.no_pp = 'PP-' + String(nextNumber).padStart(4, '0');
               nextNumber++;
@@ -1058,15 +1024,15 @@
         if (!payloadRecords.length) {
           if (!confirm('Data kosong. Sinkronisasi kosong diblokir agar data server aman. Batalkan?')) throw new Error('Dibatalkan pengguna.');
         }
-        const before = stableDataString(payloadRecords);
+        var before = stableDataString(payloadRecords);
         await fetch(scriptUrl, {
           method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: 'sync_all', records: payloadRecords })
         });
-        await new Promise(resolve => setTimeout(resolve, 700));
-        const verifyRes = await fetch(`${scriptUrl}?action=read&_=${Date.now()}`, { cache: 'no-store' });
-        const verifyJson = await verifyRes.json();
-        const after = stableDataString(verifyJson.records);
+        await new Promise(function(resolve) { setTimeout(resolve, 700); });
+        var verifyRes = await fetch(scriptUrl + '?action=read&_=' + Date.now(), { cache: 'no-store' });
+        var verifyJson = await verifyRes.json();
+        var after = stableDataString(verifyJson.records);
         if (before !== after) throw new Error('Data server berbeda dari data yang dikirim.');
         
         ppData = normalizeRecords(payloadRecords);
@@ -1089,28 +1055,19 @@
 
     function showNotification(message, type) {
       if (!type) type = 'info';
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      const colors = {
+      var container = document.getElementById('toastContainer');
+      var toast = document.createElement('div');
+      var colors = {
         success: 'bg-emerald-900/90 border-emerald-500 text-emerald-200',
         error: 'bg-red-900/90 border-red-500 text-red-200',
         info: 'bg-slate-900/90 border-purple-500 text-purple-200'
       };
-      toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium transition-all transform translate-y-2 opacity-0 ${colors[type] || colors.info}`;
-      toast.innerHTML = `<span>${message}</span>`;
+      toast.className = 'pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium transition-all transform translate-y-2 opacity-0 ' + (colors[type] || colors.info);
+      toast.innerHTML = '<span>' + message + '</span>';
       container.appendChild(toast);
-      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 50);
-      setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 4000);
+      setTimeout(function() { toast.classList.remove('translate-y-2', 'opacity-0'); }, 50);
+      setTimeout(function() { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(function() { toast.remove(); }, 300); }, 4000);
     }
-
-    // Blokir Akses Developer / Inspect Element
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-    document.addEventListener('keydown', (e) => {
-      const key = e.key.toLowerCase();
-      if (e.key === 'F12' || (e.ctrlKey && key === 'i') || (e.ctrlKey && e.shiftKey && (key === 'j' || key === 'c')) || (e.ctrlKey && key === 'u') || (e.ctrlKey && key === 's')) {
-        e.preventDefault(); return false;
-      }
-    });
   </script>
 </body>
 </html>
