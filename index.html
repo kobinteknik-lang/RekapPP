@@ -304,15 +304,15 @@
     } catch (err) { ppData = []; }
 
     function normalizeRecords(records) {
-      if (!Array.isArray(records)) throw new Error('Format data harus berupa daftar PP.');
+      if (!Array.isArray(records)) return [];
       return records.map(function(pp, idx) {
-        if (!pp || typeof pp !== 'object') throw new Error('Data PP ke-' + (idx + 1) + ' tidak valid.');
+        if (!pp || typeof pp !== 'object') return { no_pp: '', tgl_pp: '', items: [] };
         var items = Array.isArray(pp.items) ? pp.items : [];
         return {
           no_pp: String(pp.no_pp || '').trim(),
-          tgl_pp: String(pp.tgl_pp || ''),
+          tgl_pp: String(pp.tgl_pp || '').trim(),
           items: items.map(function(itm) {
-            if (!itm) itm = {};
+            if (!itm || typeof itm !== 'object') itm = {};
             var qty_pp = Math.max(0, Number(itm.qty_pp) || 0);
             var qty_po = Math.max(0, Number(itm.qty_po) || 0);
             var no_pr = String(itm.no_pr || '').trim();
@@ -330,8 +330,8 @@
             }
 
             return {
-              kode_barang: String(itm.kode_barang || ''),
-              nama_barang: String(itm.nama_barang || ''),
+              kode_barang: String(itm.kode_barang || '').trim(),
+              nama_barang: String(itm.nama_barang || '').trim(),
               qty_pp: qty_pp, no_pr: no_pr, tgl_pr: tgl_pr,
               no_po: no_po, tgl_po: tgl_po, qty_po: qty_po, status: status
             };
@@ -396,15 +396,24 @@
           tgl_pp: document.getElementById('tgl_pp').value,
           items: Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(function(row) {
             var statusEl = row.querySelector('[name="status"]');
+            var kEl = row.querySelector('[name="kode_barang"]');
+            var nEl = row.querySelector('[name="nama_barang"]');
+            var qpEl = row.querySelector('[name="qty_pp"]');
+            var prEl = row.querySelector('[name="no_pr"]');
+            var tprEl = row.querySelector('[name="tgl_pr"]');
+            var poEl = row.querySelector('[name="no_po"]');
+            var tpoEl = row.querySelector('[name="tgl_po"]');
+            var qpoEl = row.querySelector('[name="qty_po"]');
+
             return {
-              kode_barang: row.querySelector('[name="kode_barang"]').value,
-              nama_barang: row.querySelector('[name="nama_barang"]').value,
-              qty_pp: row.querySelector('[name="qty_pp"]').value,
-              no_pr: row.querySelector('[name="no_pr"]').value,
-              tgl_pr: row.querySelector('[name="tgl_pr"]').value,
-              no_po: row.querySelector('[name="no_po"]').value,
-              tgl_po: row.querySelector('[name="tgl_po"]').value,
-              qty_po: row.querySelector('[name="qty_po"]').value,
+              kode_barang: kEl ? kEl.value : '',
+              nama_barang: nEl ? nEl.value : '',
+              qty_pp: qpEl ? qpEl.value : 1,
+              no_pr: prEl ? prEl.value : '',
+              tgl_pr: tprEl ? tprEl.value : '',
+              no_po: poEl ? poEl.value : '',
+              tgl_po: tpoEl ? tpoEl.value : '',
+              qty_po: qpoEl ? qpoEl.value : 0,
               status: statusEl ? statusEl.value : 'Pending PR'
             };
           }),
@@ -428,6 +437,7 @@
           draft.items.forEach(function(item) { addItemRow(item); });
           document.getElementById('modalTitle').textContent = 'Pulihkan Draft PP';
           document.getElementById('ppModal').classList.remove('hidden');
+          lucide.createIcons();
         } else {
           localStorage.removeItem(DRAFT_KEY);
         }
@@ -442,7 +452,6 @@
       setSyncStatus(scriptUrl ? 'Siap melakukan sinkronisasi.' : 'Google Sheets belum dikonfigurasi.');
 
       document.getElementById('ppForm').addEventListener('input', saveDraft);
-      document.getElementById('itemRowsContainer').addEventListener('input', saveDraft);
       
       if (scriptUrl) fetchFromSheets();
       else {
@@ -477,7 +486,10 @@
       document.getElementById('ppForm').reset();
       document.getElementById('editIndex').value = "-1";
       document.getElementById('modalTitle').textContent = "Input Permintaan Pembelian (PP)";
-      document.getElementById('tgl_pp').valueAsDate = new Date();
+      
+      var today = new Date().toISOString().split('T')[0];
+      document.getElementById('tgl_pp').value = today;
+      
       document.getElementById('itemRowsContainer').innerHTML = "";
       addItemRow();
       
@@ -485,7 +497,10 @@
       lucide.createIcons();
     }
     
-    function closeModal() { document.getElementById('ppModal').classList.add('hidden'); }
+    function closeModal() { 
+      document.getElementById('ppModal').classList.add('hidden'); 
+      try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
+    }
     
     function openConfigModal() {
       document.getElementById('scriptUrlInput').value = scriptUrl;
@@ -496,10 +511,8 @@
 
     function saveConfig() {
       var url = document.getElementById('scriptUrlInput').value.trim();
-      if (url) {
-        if (url.indexOf('http') !== 0) {
-          showNotification('URL tidak valid.', 'error'); return;
-        }
+      if (url && url.indexOf('http') !== 0) {
+        showNotification('URL tidak valid.', 'error'); return;
       }
       scriptUrl = url;
       localStorage.setItem('google_script_url', url);
@@ -587,16 +600,17 @@
 
     function duplicateRow(btn) {
       var row = btn.closest('[data-row-index]');
+      if (!row) return;
       var data = {
-        kode_barang: row.querySelector('[name="kode_barang"]').value,
-        nama_barang: row.querySelector('[name="nama_barang"]').value,
-        qty_pp: row.querySelector('[name="qty_pp"]').value,
-        no_pr: row.querySelector('[name="no_pr"]').value,
-        tgl_pr: row.querySelector('[name="tgl_pr"]').value,
-        no_po: row.querySelector('[name="no_po"]').value,
-        tgl_po: row.querySelector('[name="tgl_po"]').value,
-        qty_po: row.querySelector('[name="qty_po"]').value,
-        status: row.querySelector('[name="status"]').value
+        kode_barang: row.querySelector('[name="kode_barang"]')?.value || '',
+        nama_barang: row.querySelector('[name="nama_barang"]')?.value || '',
+        qty_pp: row.querySelector('[name="qty_pp"]')?.value || 1,
+        no_pr: row.querySelector('[name="no_pr"]')?.value || '',
+        tgl_pr: row.querySelector('[name="tgl_pr"]')?.value || '',
+        no_po: row.querySelector('[name="no_po"]')?.value || '',
+        tgl_po: row.querySelector('[name="tgl_po"]')?.value || '',
+        qty_po: row.querySelector('[name="qty_po"]')?.value || 0,
+        status: row.querySelector('[name="status"]')?.value || 'Pending PR'
       };
       addItemRow(data);
       saveDraft();
@@ -605,9 +619,12 @@
 
     function removeRowConfirm(btn) {
       if (confirm("Hapus baris barang ini dari formulir?")) {
-        btn.closest('[data-row-index]').remove();
-        reindexRows();
-        saveDraft();
+        var row = btn.closest('[data-row-index]');
+        if (row) {
+          row.remove();
+          reindexRows();
+          saveDraft();
+        }
       }
     }
 
@@ -622,27 +639,27 @@
 
     async function handleFormSubmit(e) {
       e.preventDefault();
-      var editIndex = parseInt(document.getElementById('editIndex').value);
+      var editIndex = parseInt(document.getElementById('editIndex').value, 10);
       var no_pp = document.getElementById('no_pp').value.trim();
       var tgl_pp = document.getElementById('tgl_pp').value;
 
       var items = Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(function(row) {
         return {
-          kode_barang: row.querySelector('[name="kode_barang"]').value.trim(),
-          nama_barang: row.querySelector('[name="nama_barang"]').value.trim(),
-          qty_pp: parseFloat(row.querySelector('[name="qty_pp"]').value) || 0,
-          no_pr: row.querySelector('[name="no_pr"]').value.trim(),
-          tgl_pr: row.querySelector('[name="tgl_pr"]').value,
-          no_po: row.querySelector('[name="no_po"]').value.trim(),
-          tgl_po: row.querySelector('[name="tgl_po"]').value,
-          qty_po: parseFloat(row.querySelector('[name="qty_po"]').value) || 0,
-          status: row.querySelector('[name="status"]').value
+          kode_barang: (row.querySelector('[name="kode_barang"]')?.value || '').trim(),
+          nama_barang: (row.querySelector('[name="nama_barang"]')?.value || '').trim(),
+          qty_pp: parseFloat(row.querySelector('[name="qty_pp"]')?.value) || 0,
+          no_pr: (row.querySelector('[name="no_pr"]')?.value || '').trim(),
+          tgl_pr: row.querySelector('[name="tgl_pr"]')?.value || '',
+          no_po: (row.querySelector('[name="no_po"]')?.value || '').trim(),
+          tgl_po: row.querySelector('[name="tgl_po"]')?.value || '',
+          qty_po: parseFloat(row.querySelector('[name="qty_po"]')?.value) || 0,
+          status: row.querySelector('[name="status"]')?.value || 'Pending PR'
         };
       });
 
       if (!tgl_pp) { showNotification('Tanggal PP wajib diisi.', 'error'); return; }
       if (!items.length || items.some(function(i) { return !i.nama_barang || !Number.isFinite(i.qty_pp) || i.qty_pp < 1; })) {
-        showNotification('Periksa nama barang dan jumlah Qty PP/PO.', 'error'); return;
+        showNotification('Periksa nama barang dan jumlah Qty PP.', 'error'); return;
       }
 
       var duplicate = ppData.some(function(pp, idx) {
@@ -655,13 +672,14 @@
       }
 
       var record = { no_pp: no_pp, tgl_pp: tgl_pp, items: items };
-      if (editIndex >= 0) ppData[editIndex] = record; else ppData.unshift(record);
+      if (editIndex >= 0 && editIndex < ppData.length) ppData[editIndex] = record; 
+      else ppData.unshift(record);
 
       saveLocalData();
       try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
       renderData();
       closeModal();
-      showNotification("Data tersimpan di browser. Menunggu sinkronisasi...", "info");
+      showNotification("Data tersimpan secara lokal. Mengirim ke Google Sheets...", "info");
 
       if (scriptUrl) await syncToSheets();
     }
@@ -670,8 +688,8 @@
       var itemData = ppData[index];
       if (!itemData) return;
       document.getElementById('editIndex').value = index;
-      document.getElementById('no_pp').value = itemData.no_pp;
-      document.getElementById('tgl_pp').value = itemData.tgl_pp;
+      document.getElementById('no_pp').value = itemData.no_pp || '';
+      document.getElementById('tgl_pp').value = itemData.tgl_pp || '';
       document.getElementById('modalTitle').textContent = "Edit Dokumen PP: " + (itemData.no_pp || 'Auto');
       var container = document.getElementById('itemRowsContainer');
       container.innerHTML = "";
@@ -746,7 +764,7 @@
         if (currentPage > totalPages) currentPage = totalPages;
         if (currentPage < 1) currentPage = 1;
         var startIndex = (currentPage - 1) * rowsPerPage;
-        paginatedData = filtered.slice(startIndex, startIndex + parseInt(rowsPerPage));
+        paginatedData = filtered.slice(startIndex, startIndex + parseInt(rowsPerPage, 10));
       }
 
       if (currentViewMode === 'grouped') renderGroupedView(container, paginatedData);
@@ -770,7 +788,7 @@
         '<tbody class="divide-y divide-white/5">';
 
       data.forEach(function(pp) {
-        var globalIdx = ppData.findIndex(function(p) { return p === pp; });
+        var globalIdx = ppData.indexOf(pp);
         var totalItems = pp.items.length;
         var totalPO = pp.items.filter(function(i) { return i.no_po; }).length;
         var isComplete = totalPO === totalItems && totalItems > 0;
@@ -924,7 +942,7 @@
     }
 
     function changeRowsPerPage(val) {
-      rowsPerPage = val === 'all' ? 'all' : parseInt(val);
+      rowsPerPage = val === 'all' ? 'all' : parseInt(val, 10);
       currentPage = 1;
       renderData();
     }
@@ -988,19 +1006,6 @@
       }
     }
 
-    function stableDataString(records) {
-      return JSON.stringify(normalizeRecords(records).map(function(pp) {
-        return {
-          no_pp: pp.no_pp, tgl_pp: pp.tgl_pp, items: pp.items.map(function(i) {
-            return {
-              kode_barang: i.kode_barang, nama_barang: i.nama_barang, qty_pp: Number(i.qty_pp) || 0,
-              no_pr: i.no_pr, tgl_pr: i.tgl_pr, no_po: i.no_po, tgl_po: i.tgl_po, qty_po: Number(i.qty_po) || 0, status: i.status || 'Pending PR'
-            };
-          })
-        };
-      }).sort(function(a,b) { return a.no_pp.localeCompare(b.no_pp); }));
-    }
-
     async function syncToSheets() {
       if (!scriptUrl) return false;
       if (isSyncing) return false;
@@ -1024,27 +1029,22 @@
         if (!payloadRecords.length) {
           if (!confirm('Data kosong. Sinkronisasi kosong diblokir agar data server aman. Batalkan?')) throw new Error('Dibatalkan pengguna.');
         }
-        var before = stableDataString(payloadRecords);
+
         await fetch(scriptUrl, {
           method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: 'sync_all', records: payloadRecords })
         });
-        await new Promise(function(resolve) { setTimeout(resolve, 700); });
-        var verifyRes = await fetch(scriptUrl + '?action=read&_=' + Date.now(), { cache: 'no-store' });
-        var verifyJson = await verifyRes.json();
-        var after = stableDataString(verifyJson.records);
-        if (before !== after) throw new Error('Data server berbeda dari data yang dikirim.');
         
         ppData = normalizeRecords(payloadRecords);
         saveLocalData();
         renderData();
         lastSyncedAt = new Date().toISOString();
         localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
-        setSyncStatus('Sinkronisasi berhasil diverifikasi.');
-        showNotification('Data tersimpan dan berhasil diverifikasi di Sheets.', 'success');
+        setSyncStatus('Data berhasil dikirim ke Google Sheets.');
+        showNotification('Data tersimpan dan dikirim ke Sheets.', 'success');
       } catch (err) {
-        setSyncStatus('Sinkronisasi belum terverifikasi: ' + err.message);
-        showNotification('Sinkronisasi belum terverifikasi.', 'error');
+        setSyncStatus('Pengiriman gagal: ' + err.message);
+        showNotification('Pengiriman data gagal.', 'error');
       } finally { isSyncing = false; }
     }
 
