@@ -157,7 +157,7 @@
           <div class="p-1.5 bg-white/5 rounded-lg border border-white/10"><i data-lucide="clock" class="w-4 h-4 text-amber-400"></i></div>
         </div>
         <div class="flex flex-col">
-          <span class="text-[10px] text-amber-400 font-semibold mb-0.5 tracking-wide">Belum ada PO Keluar</span>
+          <span class="text-[10px] text-amber-400 font-semibold mb-0.5 tracking-wide">Belum Ada PO Keluar</span>
           <span id="statPending" class="text-4xl font-extrabold text-white leading-none">0</span>
         </div>
       </div>
@@ -172,15 +172,12 @@
     <div class="glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 no-print">
       <div class="relative w-full md:w-96">
         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input type="text" id="searchInput" oninput="resetPageAndRender()" placeholder="Cari No PP, Kode/Nama Barang, PR, PO..." class="w-full glass-input pl-10 pr-4 py-2 rounded-xl text-sm placeholder-slate-400">
+        <input type="text" id="searchInput" oninput="resetPageAndRender()" placeholder="Cari No PP, User, Kode/Nama Barang, PR, PO, Status..." class="w-full glass-input pl-10 pr-4 py-2 rounded-xl text-sm placeholder-slate-400">
       </div>
 
       <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
         <select id="statusFilter" aria-label="Filter status pengadaan" onchange="resetPageAndRender()" class="glass-input rounded-xl px-3 py-2 text-xs">
           <option value="all">Semua Status</option>
-          <option value="pending">Pending PR/PO</option>
-          <option value="po_issued">PO Issued / Partial</option>
-          <option value="completed">Completed / Received</option>
         </select>
         <span class="text-xs text-slate-400 font-medium hidden sm:inline">Tampilan:</span>
         <div class="bg-slate-900/60 p-1 rounded-xl border border-slate-700/50 flex space-x-1">
@@ -243,34 +240,27 @@
     function normalizeRecords(records) {
       if (!Array.isArray(records)) return [];
       return records.map(function(pp) {
-        if (!pp || typeof pp !== 'object') return { no_pp: '', tgl_pp: '', items: [] };
+        if (!pp || typeof pp !== 'object') return { no_pp: '', tgl_pp: '', user: '', items: [] };
         var items = Array.isArray(pp.items) ? pp.items : [];
         return {
           no_pp: String(pp.no_pp || '').trim(),
           tgl_pp: String(pp.tgl_pp || '').trim(),
+          user: String(pp.user || '').trim(),
           items: items.map(function(itm) {
             if (!itm || typeof itm !== 'object') itm = {};
             var qty_pp = Math.max(0, Number(itm.qty_pp) || 0);
             var qty_po = Math.max(0, Number(itm.qty_po) || 0);
-            var no_pr = String(itm.no_pr || '').trim();
-            var tgl_pr = String(itm.tgl_pr || '').trim();
-            var no_po = String(itm.no_po || '').trim();
-            var tgl_po = String(itm.tgl_po || '').trim();
-            
-            var status = itm.status || 'Pending PR';
-            if (status === 'Pending PR' || !itm.status) {
-              if (qty_po >= qty_pp && qty_pp > 0 && no_po) status = 'Completed';
-              else if (qty_po > 0 && qty_po < qty_pp) status = 'Partial Delivered';
-              else if (no_po) status = 'PO Issued';
-              else if (no_pr) status = 'PR Issued';
-              else status = 'Pending PR';
-            }
 
             return {
               kode_barang: String(itm.kode_barang || '').trim(),
               nama_barang: String(itm.nama_barang || '').trim(),
-              qty_pp: qty_pp, no_pr: no_pr, tgl_pr: tgl_pr,
-              no_po: no_po, tgl_po: tgl_po, qty_po: qty_po, status: status
+              qty_pp: qty_pp,
+              no_pr: String(itm.no_pr || '').trim(),
+              tgl_pr: String(itm.tgl_pr || '').trim(),
+              no_po: String(itm.no_po || '').trim(),
+              tgl_po: String(itm.tgl_po || '').trim(),
+              qty_po: qty_po,
+              status: String(itm.status || '-').trim()
             };
           })
         };
@@ -290,6 +280,25 @@
         if (lastSyncedAt) fullMsg += ' (Terakhir Sync: ' + new Date(lastSyncedAt).toLocaleTimeString('id-ID') + ')';
         el.textContent = fullMsg;
       }
+    }
+
+    function updateStatusFilterOptions() {
+      var select = document.getElementById('statusFilter');
+      if (!select) return;
+      var currentVal = select.value;
+      var statuses = {};
+      
+      ppData.forEach(function(pp) {
+        (pp.items || []).forEach(function(itm) {
+          if (itm.status && itm.status !== '-') statuses[itm.status] = true;
+        });
+      });
+
+      var html = '<option value="all">Semua Status</option>';
+      Object.keys(statuses).sort().forEach(function(st) {
+        html += '<option value="' + escapeHTML(st) + '" ' + (currentVal === st ? 'selected' : '') + '>' + escapeHTML(st) + '</option>';
+      });
+      select.innerHTML = html;
     }
 
     function updateStats() {
@@ -357,14 +366,23 @@
       if (url) fetchFromSheets();
     }
 
-    function getStatusBadge(status, hasPO) {
-      var st = status || (hasPO ? 'PO Issued' : 'Pending PR');
-      switch(st) {
-        case 'Completed': return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Completed</span>';
-        case 'Partial Delivered': return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Partial Order</span>';
-        case 'PO Issued': return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">PO Issued</span>';
-        case 'PR Issued': return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">PR Issued</span>';
-        default: return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-700 text-slate-300 border border-slate-600">Pending PR</span>';
+    function getStatusBadge(status) {
+      var st = (status || '-').trim();
+      if (!st || st === '-') return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">-</span>';
+      
+      var lower = st.toLowerCase();
+      if (lower.indexOf('complete') !== -1 || lower.indexOf('selesai') !== -1 || lower.indexOf('received') !== -1) {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">' + escapeHTML(st) + '</span>';
+      } else if (lower.indexOf('partial') !== -1 || lower.indexOf('parsial') !== -1) {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">' + escapeHTML(st) + '</span>';
+      } else if (lower.indexOf('po') !== -1) {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">' + escapeHTML(st) + '</span>';
+      } else if (lower.indexOf('pr') !== -1) {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">' + escapeHTML(st) + '</span>';
+      } else if (lower.indexOf('pending') !== -1 || lower.indexOf('menunggu') !== -1) {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">' + escapeHTML(st) + '</span>';
+      } else {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-700 text-slate-200 border border-slate-600">' + escapeHTML(st) + '</span>';
       }
     }
 
@@ -378,17 +396,18 @@
 
       var filtered = ppData.filter(function(pp) {
         var items = Array.isArray(pp.items) ? pp.items : [];
-        var matchHeader = String(pp.no_pp || '').toLowerCase().indexOf(query) !== -1 || String(pp.tgl_pp || '').indexOf(query) !== -1;
+        var matchHeader = String(pp.no_pp || '').toLowerCase().indexOf(query) !== -1 || 
+                          String(pp.tgl_pp || '').indexOf(query) !== -1 ||
+                          String(pp.user || '').toLowerCase().indexOf(query) !== -1;
         var matchItem = items.some(function(i) {
           return String(i.kode_barang || '').toLowerCase().indexOf(query) !== -1 ||
                  String(i.nama_barang || '').toLowerCase().indexOf(query) !== -1 ||
                  String(i.no_pr || '').toLowerCase().indexOf(query) !== -1 ||
-                 String(i.no_po || '').toLowerCase().indexOf(query) !== -1;
+                 String(i.no_po || '').toLowerCase().indexOf(query) !== -1 ||
+                 String(i.status || '').toLowerCase().indexOf(query) !== -1;
         });
-        var statusMatch = true;
-        if (statusFilter === 'pending') statusMatch = items.some(function(i) { return i.status === 'Pending PR' || i.status === 'PR Issued'; });
-        else if (statusFilter === 'po_issued') statusMatch = items.some(function(i) { return i.status === 'PO Issued' || i.status === 'Partial Delivered'; });
-        else if (statusFilter === 'completed') statusMatch = items.length > 0 && items.every(function(i) { return i.status === 'Completed' || i.no_po; });
+
+        var statusMatch = (statusFilter === 'all') || items.some(function(i) { return i.status === statusFilter; });
         return (matchHeader || matchItem) && statusMatch;
       });
 
@@ -424,10 +443,11 @@
       var html = '<table class="w-full text-left text-xs border-collapse min-w-[700px]">' +
         '<thead>' +
           '<tr class="border-b border-white/10 text-slate-300 bg-slate-900/50 uppercase tracking-wider">' +
-            '<th class="py-3.5 px-4 w-1/3">No. PP</th>' +
-            '<th class="py-3.5 px-4 w-1/4">Tanggal PP</th>' +
-            '<th class="py-3.5 px-4 w-1/5">Total Item</th>' +
-            '<th class="py-3.5 px-4 w-1/4">Progres PO</th>' +
+            '<th class="py-3.5 px-4 w-1/4">No. PP</th>' +
+            '<th class="py-3.5 px-4 w-1/6">Tanggal PP</th>' +
+            '<th class="py-3.5 px-4 w-1/5">User</th>' +
+            '<th class="py-3.5 px-4 w-1/6">Total Item</th>' +
+            '<th class="py-3.5 px-4 w-1/5">Progres PO</th>' +
           '</tr>' +
         '</thead>' +
         '<tbody class="divide-y divide-white/5">';
@@ -451,7 +471,7 @@
                 'Qty PP: <b class="text-white">' + itm.qty_pp + '</b> | PR: ' + prText + ' | PO: ' + poText + ' (Qty: ' + (itm.qty_po || 0) + ')' + sisaHtml +
               '</p>' +
             '</div>' +
-            '<div class="shrink-0">' + getStatusBadge(itm.status, !!itm.no_po) + '</div>' +
+            '<div class="shrink-0">' + getStatusBadge(itm.status) + '</div>' +
           '</div>';
         });
 
@@ -460,6 +480,7 @@
             '<i data-lucide="file-check" class="w-4 h-4 text-purple-400"></i> ' + escapeHTML(pp.no_pp || '-') +
           '</td>' +
           '<td class="py-3.5 px-4 text-slate-300">' + escapeHTML(pp.tgl_pp) + '</td>' +
+          '<td class="py-3.5 px-4 text-slate-200 font-medium">' + escapeHTML(pp.user || '-') + '</td>' +
           '<td class="py-3.5 px-4 text-slate-300 font-medium">' + totalItems + ' Item</td>' +
           '<td class="py-3.5 px-4">' +
             '<span class="px-2.5 py-1 rounded-full text-[10px] font-semibold ' + (isComplete ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30') + '">' +
@@ -468,7 +489,7 @@
           '</td>' +
         '</tr>' +
         '<tr class="bg-slate-950/40">' +
-          '<td colspan="4" class="px-6 py-3">' +
+          '<td colspan="5" class="px-6 py-3">' +
             '<div class="border-l-2 border-purple-500/40 pl-4 space-y-2">' +
               '<p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rincian Barang & Outstanding:</p>' +
               '<div class="grid grid-cols-1 xl:grid-cols-2 gap-2">' +
@@ -484,12 +505,13 @@
     }
 
     function renderFlatView(container, data) {
-      var html = '<table class="w-full text-left text-xs border-collapse min-w-[1000px]">' +
+      var html = '<table class="w-full text-left text-xs border-collapse min-w-[1100px]">' +
         '<thead>' +
           '<tr class="border-b border-white/10 text-slate-300 bg-slate-900/50 uppercase tracking-wider">' +
             '<th class="py-3.5 px-3">No. PP</th>' +
             '<th class="py-3.5 px-3">Tgl PP</th>' +
-            '<th class="py-3.5 px-3">Kode</th>' +
+            '<th class="py-3.5 px-3">User</th>' +
+            '<th class="py-3.5 px-3">Kode Barang</th>' +
             '<th class="py-3.5 px-3">Nama Barang</th>' +
             '<th class="py-3.5 px-3">Qty PP</th>' +
             '<th class="py-3.5 px-3">No. PR</th>' +
@@ -509,6 +531,7 @@
           html += '<tr class="hover:bg-white/5 transition">' +
             '<td class="py-3 px-3 font-semibold text-purple-300 whitespace-nowrap">' + escapeHTML(pp.no_pp || '-') + '</td>' +
             '<td class="py-3 px-3 text-slate-400 whitespace-nowrap">' + escapeHTML(pp.tgl_pp) + '</td>' +
+            '<td class="py-3 px-3 text-slate-200 font-medium whitespace-nowrap">' + escapeHTML(pp.user || '-') + '</td>' +
             '<td class="py-3 px-3 text-slate-300 whitespace-nowrap">' + escapeHTML(itm.kode_barang || '-') + '</td>' +
             '<td class="py-3 px-3 font-medium text-white">' + escapeHTML(itm.nama_barang) + '</td>' +
             '<td class="py-3 px-3 font-bold text-slate-200">' + itm.qty_pp + '</td>' +
@@ -518,7 +541,7 @@
             '<td class="py-3 px-3 text-slate-400 border-l border-white/10 whitespace-nowrap">' + escapeHTML(itm.tgl_po || '-') + '</td>' +
             '<td class="py-3 px-3 font-bold text-emerald-400">' + (itm.qty_po || 0) + '</td>' +
             '<td class="py-3 px-3 font-semibold ' + (outstanding > 0 ? 'text-amber-400' : 'text-slate-500') + '">' + outstanding + '</td>' +
-            '<td class="py-3 px-3">' + getStatusBadge(itm.status, !!itm.no_po) + '</td>' +
+            '<td class="py-3 px-3">' + getStatusBadge(itm.status) + '</td>' +
           '</tr>';
         });
       });
@@ -590,13 +613,13 @@
     function exportCSV() {
       if (!ppData.length) { showNotification("Tidak ada data untuk diexport.", "error"); return; }
       var separator = ";"; 
-      var csv = ["No PP", "Tanggal PP", "Kode Barang", "Nama Barang", "Qty PP", "No PR", "Tanggal PR", "No PO", "Tanggal PO", "Qty PO", "Qty Outstanding", "Status"].join(separator) + "\n";
+      var csv = ["No PP", "Tanggal PP", "User", "Kode Barang", "Nama Barang", "Qty PP", "No PR", "Tanggal PR", "No PO", "Tanggal PO", "Qty PO", "Qty Outstanding", "Status"].join(separator) + "\n";
       var formatCell = function(text) { return '"' + String(text || '').replace(/"/g, '""') + '"'; };
 
       ppData.forEach(function(pp) {
         (pp.items || []).forEach(function(i) {
           var outstanding = Math.max(0, i.qty_pp - (i.qty_po || 0));
-          csv += [formatCell(pp.no_pp), formatCell(pp.tgl_pp), formatCell(i.kode_barang), formatCell(i.nama_barang), i.qty_pp || 0,
+          csv += [formatCell(pp.no_pp), formatCell(pp.tgl_pp), formatCell(pp.user), formatCell(i.kode_barang), formatCell(i.nama_barang), i.qty_pp || 0,
                   formatCell(i.no_pr), formatCell(i.tgl_pr), formatCell(i.no_po), formatCell(i.tgl_po), i.qty_po || 0, outstanding, formatCell(i.status)
           ].join(separator) + "\n";
         });
@@ -625,6 +648,7 @@
         ppData = normalizeRecords(result.records);
         lastSyncedAt = new Date().toISOString();
         localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
+        updateStatusFilterOptions();
         renderData();
         setSyncStatus('Data berhasil dimuat dari Google Sheets.');
         showNotification('Data berhasil dimuat dari Google Sheets!', 'success');
