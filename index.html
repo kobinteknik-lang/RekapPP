@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rekap PP & Tracking Pengadaan Barang (Pro)</title>
+  <title>Dashboard & Riwayat Tracking PP (Read-Only)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -75,25 +75,24 @@
     @media print {
       body { background: none !important; color: #000 !important; }
       .glass-card { background: none !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important; }
-      header, .no-print, #toastContainer, #ppModal, #configModal, #paginationContainer { display: none !important; }
+      header, .no-print, #toastContainer, #configModal, #paginationContainer { display: none !important; }
       table, th, td { border: 1px solid #ccc !important; color: #000 !important; }
     }
   </style>
 </head>
 <body class="p-4 md:p-8">
 
-  <datalist id="itemHistoryList"></datalist>
-
   <div class="max-w-[1400px] mx-auto space-y-6">
 
+    <!-- Header -->
     <header class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="flex items-center space-x-4">
-        <div class="p-3 bg-gradient-to-tr from-red-500 via-purple-600 to-blue-500 rounded-xl shadow-lg">
+        <div class="p-3 bg-gradient-to-tr from-purple-600 via-blue-600 to-indigo-500 rounded-xl shadow-lg">
           <i data-lucide="layout-dashboard" class="w-8 h-8 text-white"></i>
         </div>
         <div>
-          <h1 class="text-2xl font-bold tracking-tight text-white">Rekap PP & Tracking Pengadaan</h1>
-          <p class="text-sm text-slate-300">Sistem Pencatatan Multi-Item per PP terintegrasi Google Sheets</p>
+          <h1 class="text-2xl font-bold tracking-tight text-white">Dashboard & Riwayat PP</h1>
+          <p class="text-sm text-slate-300">Monitoring & Tracking Pengadaan Barang Terintegrasi Google Sheets</p>
         </div>
       </div>
 
@@ -113,18 +112,14 @@
           <span>API Sheets</span>
         </button>
 
-        <button onclick="fetchFromSheets()" class="btn-bounce flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600/80 hover:bg-blue-500 text-sm font-medium border border-blue-400/30 shadow-md transition">
+        <button onclick="fetchFromSheets()" class="btn-bounce flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-blue-600/80 hover:bg-blue-500 text-sm font-semibold border border-blue-400/30 shadow-md transition">
           <i data-lucide="refresh-cw" class="w-4 h-4 text-white" id="refresh-icon"></i>
-          <span>Sync</span>
-        </button>
-
-        <button onclick="openModal()" class="btn-bounce flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-500 via-purple-600 to-blue-600 hover:opacity-90 text-sm font-semibold shadow-lg text-white transition">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          <span>Buat PP Baru</span>
+          <span>Sync Data</span>
         </button>
       </div>
     </header>
 
+    <!-- Ringkasan Statistik -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Ringkasan pengadaan">
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between">
         <div class="flex justify-between items-start mb-3">
@@ -168,11 +163,12 @@
       </div>
     </section>
     
+    <!-- Info Status Sync -->
     <div class="flex flex-wrap items-center justify-between gap-2 px-1" aria-live="polite">
-      <p id="storageStatus" class="status-line">Penyimpanan lokal siap.</p>
       <p id="syncStatus" class="status-line">Google Sheets belum disinkronkan.</p>
     </div>
 
+    <!-- Toolbar Pencarian & Filter -->
     <div class="glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 no-print">
       <div class="relative w-full md:w-96">
         <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -194,6 +190,7 @@
       </div>
     </div>
 
+    <!-- Tabel Data -->
     <div class="glass-card rounded-2xl p-6 overflow-hidden relative">
       <div class="overflow-x-auto min-h-[300px]">
         <div id="tableContainer"></div>
@@ -203,60 +200,7 @@
 
   </div>
 
-  <div id="ppModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden transition-opacity duration-300">
-    <div class="glass-card rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-white/20">
-      
-      <div class="p-6 border-b border-white/10 flex justify-between items-center bg-slate-900/40">
-        <div>
-          <h2 id="modalTitle" class="text-xl font-bold text-white">Input Permintaan Pembelian (PP)</h2>
-          <p class="text-xs text-slate-400 mt-1">Tambahkan satu dokumen PP dengan 1 atau beberapa barang sekaligus.</p>
-        </div>
-        <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white transition p-1.5 rounded-lg hover:bg-slate-800">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="ppForm" onsubmit="handleFormSubmit(event)" class="p-6 overflow-y-auto space-y-6 flex-1">
-        <input type="hidden" id="editIndex" value="-1">
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/30 p-4 rounded-xl border border-slate-800">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Nomor PP (Kosongkan utk Auto-urut)</label>
-            <input type="text" id="no_pp" placeholder="Contoh: PP/2026/001" class="w-full glass-input px-3.5 py-2 rounded-xl text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Tanggal PP <span class="text-red-400">*</span></label>
-            <input type="date" id="tgl_pp" required class="w-full glass-input px-3.5 py-2 rounded-xl text-sm">
-          </div>
-        </div>
-
-        <div class="space-y-4">
-          <div class="flex justify-between items-center">
-            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-              <i data-lucide="boxes" class="w-4 h-4 text-purple-400"></i>
-              Daftar Rincian Barang
-            </h3>
-            <button type="button" onclick="addItemRow()" class="btn-bounce text-xs flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/80 hover:bg-emerald-500 text-white font-medium transition shadow">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              <span>Tambah Barang</span>
-            </button>
-          </div>
-
-          <div id="itemRowsContainer" class="space-y-3"></div>
-        </div>
-
-        <div class="pt-4 border-t border-white/10 flex justify-end space-x-3">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
-            Batal
-          </button>
-          <button type="submit" class="btn-bounce px-6 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-red-500 via-purple-600 to-blue-600 hover:opacity-90 text-white shadow-lg transition">
-            Simpan & Sync
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
+  <!-- Modal Konfigurasi API Google Sheets -->
   <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden transition-opacity duration-300">
     <div class="glass-card rounded-2xl w-full max-w-lg p-6 space-y-5 border border-white/20">
       <div class="flex justify-between items-center">
@@ -270,7 +214,7 @@
       </div>
 
       <p class="text-xs text-slate-300 leading-relaxed">
-        Masukkan <b>Web App URL</b> dari Google Apps Script untuk menghubungkan form web ini secara langsung ke Google Sheets milik Anda.
+        Masukkan <b>Web App URL</b> dari Google Apps Script untuk menarik data dari Google Sheets secara langsung.
       </p>
 
       <div>
@@ -280,7 +224,7 @@
 
       <div class="flex justify-end space-x-3 pt-2">
         <button type="button" onclick="closeConfigModal()" class="px-4 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800 transition">Batal</button>
-        <button type="button" onclick="saveConfig()" class="btn-bounce px-5 py-2 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white transition shadow">Simpan Config</button>
+        <button type="button" onclick="saveConfig()" class="btn-bounce px-5 py-2 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white transition shadow">Simpan & Tarik Data</button>
       </div>
     </div>
   </div>
@@ -291,21 +235,14 @@
     var scriptUrl = localStorage.getItem('google_script_url') || '';
     var ppData = [];
     var currentViewMode = 'grouped'; 
-    var isSyncing = false;
     var lastSyncedAt = localStorage.getItem('rekap_pp_last_sync') || null;
-    var DRAFT_KEY = 'rekap_pp_draft_v1';
     
     var currentPage = 1;
     var rowsPerPage = 10;
 
-    try { 
-      var rawData = localStorage.getItem('rekap_pp_db');
-      ppData = rawData ? normalizeRecords(JSON.parse(rawData)) : []; 
-    } catch (err) { ppData = []; }
-
     function normalizeRecords(records) {
       if (!Array.isArray(records)) return [];
-      return records.map(function(pp, idx) {
+      return records.map(function(pp) {
         if (!pp || typeof pp !== 'object') return { no_pp: '', tgl_pp: '', items: [] };
         var items = Array.isArray(pp.items) ? pp.items : [];
         return {
@@ -346,11 +283,6 @@
       });
     }
 
-    function setStorageStatus(message) {
-      var el = document.getElementById('storageStatus');
-      if (el) el.textContent = message;
-    }
-    
     function setSyncStatus(message) {
       var el = document.getElementById('syncStatus');
       if (el) {
@@ -369,79 +301,6 @@
       document.getElementById('statItems').textContent = allItems;
       document.getElementById('statPO').textContent = completedOrPO;
       document.getElementById('statPending').textContent = Math.max(0, allItems - completedOrPO);
-      updateItemHistoryDatalist();
-    }
-
-    function updateItemHistoryDatalist() {
-      var datalist = document.getElementById('itemHistoryList');
-      if (!datalist) return;
-      var names = {};
-      ppData.forEach(function(pp) {
-        (pp.items || []).forEach(function(i) {
-          if (i.nama_barang) names[i.nama_barang] = true;
-        });
-      });
-      var optionsHtml = '';
-      for (var n in names) {
-        optionsHtml += '<option value="' + escapeHTML(n) + '">';
-      }
-      datalist.innerHTML = optionsHtml;
-    }
-
-    function saveDraft() {
-      try {
-        if (document.getElementById('ppModal').classList.contains('hidden')) return;
-        var draft = {
-          no_pp: document.getElementById('no_pp').value,
-          tgl_pp: document.getElementById('tgl_pp').value,
-          items: Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(function(row) {
-            var statusEl = row.querySelector('[name="status"]');
-            var kEl = row.querySelector('[name="kode_barang"]');
-            var nEl = row.querySelector('[name="nama_barang"]');
-            var qpEl = row.querySelector('[name="qty_pp"]');
-            var prEl = row.querySelector('[name="no_pr"]');
-            var tprEl = row.querySelector('[name="tgl_pr"]');
-            var poEl = row.querySelector('[name="no_po"]');
-            var tpoEl = row.querySelector('[name="tgl_po"]');
-            var qpoEl = row.querySelector('[name="qty_po"]');
-
-            return {
-              kode_barang: kEl ? kEl.value : '',
-              nama_barang: nEl ? nEl.value : '',
-              qty_pp: qpEl ? qpEl.value : 1,
-              no_pr: prEl ? prEl.value : '',
-              tgl_pr: tprEl ? tprEl.value : '',
-              no_po: poEl ? poEl.value : '',
-              tgl_po: tpoEl ? tpoEl.value : '',
-              qty_po: qpoEl ? qpoEl.value : 0,
-              status: statusEl ? statusEl.value : 'Pending PR'
-            };
-          }),
-          savedAt: new Date().toISOString()
-        };
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      } catch (err) {}
-    }
-
-    function restoreDraftIfAvailable() {
-      try {
-        var raw = localStorage.getItem(DRAFT_KEY);
-        if (!raw) return;
-        var draft = JSON.parse(raw);
-        if (!draft || !Array.isArray(draft.items) || !draft.items.length) return;
-        if (confirm('Ditemukan draft PP yang belum selesai disimpan. Pulihkan draft tersebut?')) {
-          document.getElementById('no_pp').value = draft.no_pp || '';
-          document.getElementById('tgl_pp').value = draft.tgl_pp || '';
-          var container = document.getElementById('itemRowsContainer');
-          container.innerHTML = '';
-          draft.items.forEach(function(item) { addItemRow(item); });
-          document.getElementById('modalTitle').textContent = 'Pulihkan Draft PP';
-          document.getElementById('ppModal').classList.remove('hidden');
-          lucide.createIcons();
-        } else {
-          localStorage.removeItem(DRAFT_KEY);
-        }
-      } catch (err) { localStorage.removeItem(DRAFT_KEY); }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -451,14 +310,11 @@
       updateStats();
       setSyncStatus(scriptUrl ? 'Siap melakukan sinkronisasi.' : 'Google Sheets belum dikonfigurasi.');
 
-      document.getElementById('ppForm').addEventListener('input', saveDraft);
-      
       if (scriptUrl) fetchFromSheets();
       else {
         renderData();
         showNotification("Masukkan Web App URL Google Sheets Anda pada 'API Sheets'", "info");
       }
-      restoreDraftIfAvailable();
     });
 
     function resetPageAndRender() {
@@ -482,26 +338,6 @@
       renderData();
     }
 
-    function openModal() {
-      document.getElementById('ppForm').reset();
-      document.getElementById('editIndex').value = "-1";
-      document.getElementById('modalTitle').textContent = "Input Permintaan Pembelian (PP)";
-      
-      var today = new Date().toISOString().split('T')[0];
-      document.getElementById('tgl_pp').value = today;
-      
-      document.getElementById('itemRowsContainer').innerHTML = "";
-      addItemRow();
-      
-      document.getElementById('ppModal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-    
-    function closeModal() { 
-      document.getElementById('ppModal').classList.add('hidden'); 
-      try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
-    }
-    
     function openConfigModal() {
       document.getElementById('scriptUrlInput').value = scriptUrl;
       document.getElementById('configModal').classList.remove('hidden');
@@ -519,196 +355,6 @@
       closeConfigModal();
       showNotification("URL Google Script disimpan!", "success");
       if (url) fetchFromSheets();
-    }
-
-    function addItemRow(data) {
-      data = data || {};
-      var container = document.getElementById('itemRowsContainer');
-      var rowIndex = container.children.length;
-      var row = document.createElement('div');
-      row.className = "p-4 rounded-xl glass-card bg-slate-900/60 border border-slate-700/60 space-y-3 relative group";
-      row.setAttribute('data-row-index', rowIndex);
-      var statusVal = data.status || 'Pending PR';
-
-      var removeBtnHtml = '';
-      if (rowIndex > 0) {
-        removeBtnHtml = '<button type="button" onclick="removeRowConfirm(this)" class="text-red-400 hover:text-red-300 transition text-xs flex items-center gap-1 bg-red-950/40 px-2 py-1 rounded border border-red-500/20">' +
-          '<i data-lucide="trash-2" class="w-3 h-3"></i> Hapus' +
-        '</button>';
-      }
-
-      row.innerHTML = 
-        '<div class="flex justify-between items-center border-b border-slate-700/50 pb-2">' +
-          '<span class="text-xs font-semibold text-purple-300">Barang #' + (rowIndex + 1) + '</span>' +
-          '<div class="flex items-center space-x-2">' +
-            '<button type="button" onclick="duplicateRow(this)" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1 bg-indigo-950/40 px-2 py-1 rounded border border-indigo-500/20">' +
-              '<i data-lucide="copy" class="w-3 h-3"></i> Duplikat' +
-            '</button>' +
-            removeBtnHtml +
-          '</div>' +
-        '</div>' +
-        '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">' +
-          '<div>' +
-            '<label class="block text-[11px] font-medium text-slate-300 mb-1">Kode Barang</label>' +
-            '<input type="text" name="kode_barang" value="' + escapeHTML(data.kode_barang || '') + '" placeholder="KDB-001" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-          '</div>' +
-          '<div class="sm:col-span-2">' +
-            '<label class="block text-[11px] font-medium text-slate-300 mb-1">Nama Barang <span class="text-red-400">*</span></label>' +
-            '<input type="text" name="nama_barang" list="itemHistoryList" required value="' + escapeHTML(data.nama_barang || '') + '" placeholder="Ketik atau pilih nama barang..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-          '</div>' +
-          '<div>' +
-            '<label class="block text-[11px] font-medium text-slate-300 mb-1">Qty PP <span class="text-red-400">*</span></label>' +
-            '<input type="number" name="qty_pp" min="1" required value="' + escapeHTML(data.qty_pp || 1) + '" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-          '</div>' +
-        '</div>' +
-        '<div class="grid grid-cols-2 md:grid-cols-6 gap-3 pt-1">' +
-          '<div>' +
-            '<label class="block text-[11px] font-medium text-slate-400 mb-1">No. PR</label>' +
-            '<input type="text" name="no_pr" value="' + escapeHTML(data.no_pr || '') + '" placeholder="PR-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-          '</div>' +
-          '<div>' +
-            '<label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal PR</label>' +
-            '<input type="date" name="tgl_pr" value="' + escapeHTML(data.tgl_pr || '') + '" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-          '</div>' +
-          '<div>' +
-            '<label class="block text-[11px] font-medium text-slate-400 mb-1">No. PO</label>' +
-            '<input type="text" name="no_po" value="' + escapeHTML(data.no_po || '') + '" placeholder="PO-..." class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-          '</div>' +
-          '<div>' +
-            '<label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal PO</label>' +
-            '<input type="date" name="tgl_po" value="' + escapeHTML(data.tgl_po || '') + '" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-          '</div>' +
-          '<div>' +
-            '<label class="block text-[11px] font-medium text-slate-400 mb-1">Qty PO</label>' +
-            '<input type="number" name="qty_po" min="0" value="' + escapeHTML(data.qty_po || 0) + '" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-          '</div>' +
-          '<div>' +
-            '<label class="block text-[11px] font-medium text-slate-400 mb-1">Status Item</label>' +
-            '<select name="status" class="w-full glass-input px-3 py-1.5 rounded-lg text-xs">' +
-              '<option value="Pending PR" ' + (statusVal === 'Pending PR' ? 'selected' : '') + '>Pending PR</option>' +
-              '<option value="PR Issued" ' + (statusVal === 'PR Issued' ? 'selected' : '') + '>PR Issued</option>' +
-              '<option value="PO Issued" ' + (statusVal === 'PO Issued' ? 'selected' : '') + '>PO Issued</option>' +
-              '<option value="Partial Delivered" ' + (statusVal === 'Partial Delivered' ? 'selected' : '') + '>Partial Delivered</option>' +
-              '<option value="Completed" ' + (statusVal === 'Completed' ? 'selected' : '') + '>Completed / Received</option>' +
-            '</select>' +
-          '</div>' +
-        '</div>';
-
-      container.appendChild(row);
-      lucide.createIcons();
-    }
-
-    function duplicateRow(btn) {
-      var row = btn.closest('[data-row-index]');
-      if (!row) return;
-      var data = {
-        kode_barang: row.querySelector('[name="kode_barang"]')?.value || '',
-        nama_barang: row.querySelector('[name="nama_barang"]')?.value || '',
-        qty_pp: row.querySelector('[name="qty_pp"]')?.value || 1,
-        no_pr: row.querySelector('[name="no_pr"]')?.value || '',
-        tgl_pr: row.querySelector('[name="tgl_pr"]')?.value || '',
-        no_po: row.querySelector('[name="no_po"]')?.value || '',
-        tgl_po: row.querySelector('[name="tgl_po"]')?.value || '',
-        qty_po: row.querySelector('[name="qty_po"]')?.value || 0,
-        status: row.querySelector('[name="status"]')?.value || 'Pending PR'
-      };
-      addItemRow(data);
-      saveDraft();
-      showNotification("Baris barang berhasil diduplikat.", "info");
-    }
-
-    function removeRowConfirm(btn) {
-      if (confirm("Hapus baris barang ini dari formulir?")) {
-        var row = btn.closest('[data-row-index]');
-        if (row) {
-          row.remove();
-          reindexRows();
-          saveDraft();
-        }
-      }
-    }
-
-    function reindexRows() {
-      var container = document.getElementById('itemRowsContainer');
-      Array.from(container.children).forEach(function(row, idx) {
-        row.setAttribute('data-row-index', idx);
-        var title = row.querySelector('.text-purple-300');
-        if (title) title.textContent = 'Barang #' + (idx + 1);
-      });
-    }
-
-    async function handleFormSubmit(e) {
-      e.preventDefault();
-      var editIndex = parseInt(document.getElementById('editIndex').value, 10);
-      var no_pp = document.getElementById('no_pp').value.trim();
-      var tgl_pp = document.getElementById('tgl_pp').value;
-
-      var items = Array.from(document.querySelectorAll('#itemRowsContainer [data-row-index]')).map(function(row) {
-        return {
-          kode_barang: (row.querySelector('[name="kode_barang"]')?.value || '').trim(),
-          nama_barang: (row.querySelector('[name="nama_barang"]')?.value || '').trim(),
-          qty_pp: parseFloat(row.querySelector('[name="qty_pp"]')?.value) || 0,
-          no_pr: (row.querySelector('[name="no_pr"]')?.value || '').trim(),
-          tgl_pr: row.querySelector('[name="tgl_pr"]')?.value || '',
-          no_po: (row.querySelector('[name="no_po"]')?.value || '').trim(),
-          tgl_po: row.querySelector('[name="tgl_po"]')?.value || '',
-          qty_po: parseFloat(row.querySelector('[name="qty_po"]')?.value) || 0,
-          status: row.querySelector('[name="status"]')?.value || 'Pending PR'
-        };
-      });
-
-      if (!tgl_pp) { showNotification('Tanggal PP wajib diisi.', 'error'); return; }
-      if (!items.length || items.some(function(i) { return !i.nama_barang || !Number.isFinite(i.qty_pp) || i.qty_pp < 1; })) {
-        showNotification('Periksa nama barang dan jumlah Qty PP.', 'error'); return;
-      }
-
-      var duplicate = ppData.some(function(pp, idx) {
-        return idx !== editIndex && no_pp && pp.no_pp.trim().toLowerCase() === no_pp.toLowerCase();
-      });
-      if (duplicate) {
-        showNotification('Nomor PP sudah digunakan.', 'error');
-        document.getElementById('no_pp').focus();
-        return;
-      }
-
-      var record = { no_pp: no_pp, tgl_pp: tgl_pp, items: items };
-      if (editIndex >= 0 && editIndex < ppData.length) ppData[editIndex] = record; 
-      else ppData.unshift(record);
-
-      saveLocalData();
-      try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
-      renderData();
-      closeModal();
-      showNotification("Data tersimpan secara lokal. Mengirim ke Google Sheets...", "info");
-
-      if (scriptUrl) await syncToSheets();
-    }
-
-    function editPP(index) {
-      var itemData = ppData[index];
-      if (!itemData) return;
-      document.getElementById('editIndex').value = index;
-      document.getElementById('no_pp').value = itemData.no_pp || '';
-      document.getElementById('tgl_pp').value = itemData.tgl_pp || '';
-      document.getElementById('modalTitle').textContent = "Edit Dokumen PP: " + (itemData.no_pp || 'Auto');
-      var container = document.getElementById('itemRowsContainer');
-      container.innerHTML = "";
-      if (itemData.items && itemData.items.length > 0) {
-        itemData.items.forEach(function(itm) { addItemRow(itm); });
-      } else {
-        addItemRow();
-      }
-      document.getElementById('ppModal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    async function deletePP(index) {
-      if (!confirm("Apakah Anda yakin ingin menghapus data PP ini beserta seluruh barangnya?")) return;
-      ppData.splice(index, 1);
-      saveLocalData();
-      renderData();
-      showNotification("Data PP dihapus!", "info");
-      if (scriptUrl) await syncToSheets();
     }
 
     function getStatusBadge(status, hasPO) {
@@ -751,7 +397,7 @@
           '<div class="text-center py-12 text-slate-400">' +
             '<i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 opacity-40"></i>' +
             '<p class="text-base font-medium">Belum ada data PP ditemukan</p>' +
-            '<p class="text-xs text-slate-500 mt-1">Ubah kata kunci/filter atau klik "Buat PP Baru".</p>' +
+            '<p class="text-xs text-slate-500 mt-1">Ubah kata kunci/filter atau klik "Sync Data".</p>' +
           '</div>';
         if (pagContainer) pagContainer.innerHTML = '';
         lucide.createIcons();
@@ -778,17 +424,15 @@
       var html = '<table class="w-full text-left text-xs border-collapse min-w-[700px]">' +
         '<thead>' +
           '<tr class="border-b border-white/10 text-slate-300 bg-slate-900/50 uppercase tracking-wider">' +
-            '<th class="py-3.5 px-4 w-1/4">No. PP</th>' +
-            '<th class="py-3.5 px-4 w-1/6">Tanggal PP</th>' +
-            '<th class="py-3.5 px-4 w-1/6">Total Item</th>' +
+            '<th class="py-3.5 px-4 w-1/3">No. PP</th>' +
+            '<th class="py-3.5 px-4 w-1/4">Tanggal PP</th>' +
+            '<th class="py-3.5 px-4 w-1/5">Total Item</th>' +
             '<th class="py-3.5 px-4 w-1/4">Progres PO</th>' +
-            '<th class="py-3.5 px-4 text-right no-print w-1/6">Aksi</th>' +
           '</tr>' +
         '</thead>' +
         '<tbody class="divide-y divide-white/5">';
 
       data.forEach(function(pp) {
-        var globalIdx = ppData.indexOf(pp);
         var totalItems = pp.items.length;
         var totalPO = pp.items.filter(function(i) { return i.no_po; }).length;
         var isComplete = totalPO === totalItems && totalItems > 0;
@@ -813,7 +457,7 @@
 
         html += '<tr class="hover:bg-white/5 transition group">' +
           '<td class="py-3.5 px-4 font-bold text-white flex items-center gap-2">' +
-            '<i data-lucide="file-check" class="w-4 h-4 text-purple-400"></i> ' + escapeHTML(pp.no_pp || '(Auto-Urut)') +
+            '<i data-lucide="file-check" class="w-4 h-4 text-purple-400"></i> ' + escapeHTML(pp.no_pp || '-') +
           '</td>' +
           '<td class="py-3.5 px-4 text-slate-300">' + escapeHTML(pp.tgl_pp) + '</td>' +
           '<td class="py-3.5 px-4 text-slate-300 font-medium">' + totalItems + ' Item</td>' +
@@ -822,13 +466,9 @@
               totalPO + ' / ' + totalItems + ' PO Ready' +
             '</span>' +
           '</td>' +
-          '<td class="py-3.5 px-4 text-right space-x-2 no-print">' +
-            '<button onclick="editPP(' + globalIdx + ')" class="p-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 transition" title="Edit PP"><i data-lucide="edit-3" class="w-4 h-4"></i></button>' +
-            '<button onclick="deletePP(' + globalIdx + ')" class="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-300 transition" title="Hapus PP"><i data-lucide="trash-2" class="w-4 h-4"></i></button>' +
-          '</td>' +
         '</tr>' +
         '<tr class="bg-slate-950/40">' +
-          '<td colspan="5" class="px-6 py-3">' +
+          '<td colspan="4" class="px-6 py-3">' +
             '<div class="border-l-2 border-purple-500/40 pl-4 space-y-2">' +
               '<p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rincian Barang & Outstanding:</p>' +
               '<div class="grid grid-cols-1 xl:grid-cols-2 gap-2">' +
@@ -867,7 +507,7 @@
         pp.items.forEach(function(itm) {
           var outstanding = Math.max(0, itm.qty_pp - (itm.qty_po || 0));
           html += '<tr class="hover:bg-white/5 transition">' +
-            '<td class="py-3 px-3 font-semibold text-purple-300 whitespace-nowrap">' + escapeHTML(pp.no_pp || '(Auto)') + '</td>' +
+            '<td class="py-3 px-3 font-semibold text-purple-300 whitespace-nowrap">' + escapeHTML(pp.no_pp || '-') + '</td>' +
             '<td class="py-3 px-3 text-slate-400 whitespace-nowrap">' + escapeHTML(pp.tgl_pp) + '</td>' +
             '<td class="py-3 px-3 text-slate-300 whitespace-nowrap">' + escapeHTML(itm.kode_barang || '-') + '</td>' +
             '<td class="py-3 px-3 font-medium text-white">' + escapeHTML(itm.nama_barang) + '</td>' +
@@ -982,17 +622,9 @@
         var result = await res.json();
         if (!result || result.status !== 'success' || !Array.isArray(result.records)) throw new Error((result && result.message) || 'Format tidak sesuai.');
         
-        var remote = normalizeRecords(result.records);
-        var localHasData = ppData.some(function(pp) { return pp.no_pp || (pp.items || []).length; });
-        if (remote.length === 0 && localHasData) {
-          if (!confirm('Server Google Sheets kosong. Tetap muat data kosong dan timpa data lokal?')) {
-            setSyncStatus('Sinkronisasi dibatalkan; data lokal dipertahankan.'); return false;
-          }
-        }
-        ppData = remote;
+        ppData = normalizeRecords(result.records);
         lastSyncedAt = new Date().toISOString();
         localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
-        saveLocalData();
         renderData();
         setSyncStatus('Data berhasil dimuat dari Google Sheets.');
         showNotification('Data berhasil dimuat dari Google Sheets!', 'success');
@@ -1004,53 +636,6 @@
       } finally {
         if (icon) icon.classList.remove('animate-spin');
       }
-    }
-
-    async function syncToSheets() {
-      if (!scriptUrl) return false;
-      if (isSyncing) return false;
-      isSyncing = true;
-      setSyncStatus('Mengirim data ke Google Sheets…');
-      try {
-        var payloadRecords = normalizeRecords(ppData);
-        if (payloadRecords.some(function(pp) { return !String(pp.no_pp || '').trim(); })) {
-          var nextRes = await fetch(scriptUrl + '?action=get_next_pp&_=' + Date.now(), { cache: 'no-store' });
-          if (!nextRes.ok) throw new Error('Tidak bisa mengambil nomor PP server.');
-          var nextJson = await nextRes.json();
-          var matchNo = String(nextJson && nextJson.next_no_pp).match(/(\d+)$/);
-          var nextNumber = parseInt(matchNo ? matchNo[1] : '1', 10);
-          payloadRecords.forEach(function(pp) {
-            if (!String(pp.no_pp || '').trim()) {
-              pp.no_pp = 'PP-' + String(nextNumber).padStart(4, '0');
-              nextNumber++;
-            }
-          });
-        }
-        if (!payloadRecords.length) {
-          if (!confirm('Data kosong. Sinkronisasi kosong diblokir agar data server aman. Batalkan?')) throw new Error('Dibatalkan pengguna.');
-        }
-
-        await fetch(scriptUrl, {
-          method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'sync_all', records: payloadRecords })
-        });
-        
-        ppData = normalizeRecords(payloadRecords);
-        saveLocalData();
-        renderData();
-        lastSyncedAt = new Date().toISOString();
-        localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
-        setSyncStatus('Data berhasil dikirim ke Google Sheets.');
-        showNotification('Data tersimpan dan dikirim ke Sheets.', 'success');
-      } catch (err) {
-        setSyncStatus('Pengiriman gagal: ' + err.message);
-        showNotification('Pengiriman data gagal.', 'error');
-      } finally { isSyncing = false; }
-    }
-
-    function saveLocalData() {
-      try { localStorage.setItem('rekap_pp_db', JSON.stringify(ppData)); setStorageStatus('Data lokal tersimpan.'); } 
-      catch (err) { setStorageStatus('Penyimpanan lokal gagal.'); showNotification('Penyimpanan lokal penuh/diblokir.', 'error'); }
     }
 
     function showNotification(message, type) {
