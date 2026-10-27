@@ -134,8 +134,10 @@
       </div>
     </header>
 
-    <!-- Ringkasan Statistik (KPI Cards) -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Ringkasan pengadaan">
+    <!-- Ringkasan Statistik (KPI Cards) - Diubah menjadi 6 Grid -->
+    <section class="grid grid-cols-2 lg:grid-cols-3 gap-4" aria-label="Ringkasan pengadaan">
+      
+      <!-- Card 1: Total Dokumen PP -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-blue-900">
           <i data-lucide="files" class="w-24 h-24"></i>
@@ -154,6 +156,7 @@
         </div>
       </div>
 
+      <!-- Card 2: Total Jenis Barang -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-indigo-900">
           <i data-lucide="boxes" class="w-24 h-24"></i>
@@ -172,12 +175,13 @@
         </div>
       </div>
 
+      <!-- Card 3: PO Ready / Proses PO -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-emerald-900">
           <i data-lucide="check-circle-2" class="w-24 h-24"></i>
         </div>
         <div class="flex justify-between items-start mb-3">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Selesai / PO Ready</span>
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">PO Ready / Datang</span>
           <div class="p-2 bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-600">
             <i data-lucide="check-circle-2" class="w-5 h-5"></i>
           </div>
@@ -190,23 +194,63 @@
         </div>
       </div>
 
+      <!-- Card 4: Belum PO -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-amber-900">
-          <i data-lucide="clock" class="w-24 h-24"></i>
+          <i data-lucide="shopping-cart" class="w-24 h-24"></i>
         </div>
         <div class="flex justify-between items-start mb-3">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Menunggu (Pending)</span>
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Belum PO</span>
           <div class="p-2 bg-amber-50 rounded-xl border border-amber-100 text-amber-600">
-            <i data-lucide="clock" class="w-5 h-5"></i>
+            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
           </div>
         </div>
         <div class="flex flex-col">
-          <span id="statPending" class="text-3xl lg:text-4xl font-black text-amber-600 leading-none">0</span>
+          <span id="statBelumPO" class="text-3xl lg:text-4xl font-black text-amber-600 leading-none">0</span>
           <span class="text-[11px] text-amber-700 font-semibold mt-2 flex items-center gap-1">
-            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Belum Terbit Nomor PO
+            <i data-lucide="clock" class="w-3.5 h-3.5"></i> Menunggu Pembuatan PO
           </span>
         </div>
       </div>
+
+      <!-- Card 5: Belum Jadi PR -->
+      <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-slate-900">
+          <i data-lucide="file-minus" class="w-24 h-24"></i>
+        </div>
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Belum Jadi PR</span>
+          <div class="p-2 bg-slate-100 rounded-xl border border-slate-200 text-slate-600">
+            <i data-lucide="file-minus" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <span id="statBelumPR" class="text-3xl lg:text-4xl font-black text-slate-700 leading-none">0</span>
+          <span class="text-[11px] text-slate-500 font-semibold mt-2 flex items-center gap-1">
+            <i data-lucide="hourglass" class="w-3.5 h-3.5"></i> Masih Tahap Awal
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 6: Ditolak -->
+      <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-rose-900">
+          <i data-lucide="ban" class="w-24 h-24"></i>
+        </div>
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ditolak / Batal</span>
+          <div class="p-2 bg-rose-50 rounded-xl border border-rose-100 text-rose-600">
+            <i data-lucide="ban" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <span id="statDitolak" class="text-3xl lg:text-4xl font-black text-rose-600 leading-none">0</span>
+          <span class="text-[11px] text-rose-700 font-semibold mt-2 flex items-center gap-1">
+            <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Permintaan Dibatalkan
+          </span>
+        </div>
+      </div>
+
     </section>
     
     <!-- Info Status Sync -->
@@ -263,7 +307,7 @@
 
   <script>
     // MASUKKAN URL GOOGLE SHEETS API ANDA DI SINI
-    var scriptUrl = 'https://script.google.com/macros/s/AKfycbw6sBj-fTwiUgujizXeerMQUMEAa3EdDj4XhMME7dZ10EmUwP6IbCrcQMT0OomqNkbg1A/exec';
+    var scriptUrl = 'https://script.google.com/macros/s/GANTI_DENGAN_URL_ANDA_DI_SINI/exec';
     
     var ppData = [];
     var currentViewMode = 'grouped'; 
@@ -337,15 +381,63 @@
       select.innerHTML = html;
     }
 
+    // =====================================================================
+    // CORE LOGIC: Fungsi Terpusat Pembacaan Kategori Status (Anti Bug)
+    // =====================================================================
+    function getItemCategory(itm) {
+      var st = String(itm.status || '').toUpperCase().trim();
+      
+      // 1. Prioritaskan teks/keterangan manual yang Anda ketik
+      if (st.indexOf('DITOLAK') !== -1 || st.indexOf('BATAL') !== -1) return 'DITOLAK';
+      if (st.indexOf('BELUM JADI PR') !== -1 || st.indexOf('BELUM PR') !== -1) return 'BELUM_PR';
+      if (st.indexOf('BELUM PO') !== -1) return 'BELUM_PO';
+      if (st.indexOf('SUDAH DATANG') !== -1 || st.indexOf('TUNGGU KEDATANGAN') !== -1 || st.indexOf('SUDAH PO') !== -1) return 'SUDAH_PO';
+      
+      // 2. Jika teks status KOSONG, lakukan Fallback ke kolom Nomor
+      var po = String(itm.no_po || '').toUpperCase().trim();
+      var pr = String(itm.no_pr || '').toUpperCase().trim();
+      
+      // Daftar karakter kosong/palsu yang sering masuk dari Sheets
+      var invalidData = ['', '-', '.', '0', 'N/A', 'TBA', 'BELUM', 'KOSONG', 'FALSE'];
+      
+      if (invalidData.indexOf(po) === -1) {
+         return 'SUDAH_PO'; // Kolom PO terisi nomor/huruf valid
+      } else if (invalidData.indexOf(pr) === -1) {
+         return 'BELUM_PO'; // Kolom PO kosong, tapi PR terisi
+      } else {
+         return 'BELUM_PR'; // Keduanya kosong
+      }
+    }
+
     function updateStats() {
-      var allItems = ppData.reduce(function(sum, pp) { return sum + (Array.isArray(pp.items) ? pp.items.length : 0); }, 0);
-      var completedOrPO = ppData.reduce(function(sum, pp) {
-        return sum + (pp.items || []).filter(function(i) { return String(i.no_po || '').trim() !== ''; }).length;
-      }, 0);
+      var allItems = 0;
+      var statSudahPO = 0;
+      var statBelumPO = 0;
+      var statBelumPR = 0;
+      var statDitolak = 0;
+
+      ppData.forEach(function(pp) {
+        var items = pp.items || [];
+        allItems += items.length;
+        
+        items.forEach(function(i) {
+          var category = getItemCategory(i);
+          
+          if (category === 'DITOLAK') statDitolak++;
+          else if (category === 'BELUM_PR') statBelumPR++;
+          else if (category === 'BELUM_PO') statBelumPO++;
+          else if (category === 'SUDAH_PO') statSudahPO++;
+        });
+      });
+
+      // Update Angka di DOM Dashboard
       document.getElementById('statPP').textContent = ppData.length;
       document.getElementById('statItems').textContent = allItems;
-      document.getElementById('statPO').textContent = completedOrPO;
-      document.getElementById('statPending').textContent = Math.max(0, allItems - completedOrPO);
+      document.getElementById('statPO').textContent = statSudahPO;
+      
+      if(document.getElementById('statBelumPO')) document.getElementById('statBelumPO').textContent = statBelumPO;
+      if(document.getElementById('statBelumPR')) document.getElementById('statBelumPR').textContent = statBelumPR;
+      if(document.getElementById('statDitolak')) document.getElementById('statDitolak').textContent = statDitolak;
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -383,25 +475,23 @@
       renderData();
     }
 
-    /* ==== FUNGSI STATUS YANG SUDAH DIPERBARUI ==== */
     function getStatusBadge(status) {
       var st = (status || '-').trim();
       if (!st || st === '-') return '<span class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">-</span>';
       
       var upper = st.toUpperCase();
       
-      if (upper.indexOf('SUDAH DATANG') !== -1) {
+      if (upper.indexOf('SUDAH DATANG') !== -1 || upper.indexOf('SELESAI') !== -1 || upper.indexOf('SUDAH PO') !== -1) {
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/80 inline-flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
-      } else if (upper.indexOf('TUNGGU KEDATANGAN') !== -1) {
+      } else if (upper.indexOf('TUNGGU KEDATANGAN') !== -1 || upper.indexOf('PROSES') !== -1) {
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200/80 inline-flex items-center gap-1"><i data-lucide="truck" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
       } else if (upper.indexOf('BELUM PO') !== -1) {
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200/80 inline-flex items-center gap-1"><i data-lucide="shopping-cart" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
-      } else if (upper.indexOf('BELUM JADI PR') !== -1) {
+      } else if (upper.indexOf('BELUM JADI PR') !== -1 || upper.indexOf('BELUM PR') !== -1) {
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-200 text-slate-700 border border-slate-300 inline-flex items-center gap-1"><i data-lucide="file-minus" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
-      } else if (upper.indexOf('DITOLAK') !== -1) {
+      } else if (upper.indexOf('DITOLAK') !== -1 || upper.indexOf('BATAL') !== -1) {
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200/80 inline-flex items-center gap-1"><i data-lucide="ban" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
       } else {
-        // Fallback jika ada status lain
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">' + escapeHTML(st) + '</span>';
       }
     }
@@ -412,7 +502,7 @@
       var query = document.getElementById('searchInput').value.toLowerCase().trim();
       var statusFilterEl = document.getElementById('statusFilter');
       var statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
-      updateStats();
+      updateStats(); // Sinkronisasi angka kartu dashboard setiap kali render
 
       var filtered = ppData.filter(function(pp) {
         var items = Array.isArray(pp.items) ? pp.items : [];
@@ -470,15 +560,26 @@
             '<th class="py-3.5 px-4 w-1/6">Tanggal PP</th>' +
             '<th class="py-3.5 px-4 w-1/5">User / Pemohon</th>' +
             '<th class="py-3.5 px-4 w-1/6">Total Item</th>' +
-            '<th class="py-3.5 px-4 w-1/5">Progres PO</th>' +
+            '<th class="py-3.5 px-4 w-1/5">Status Terproses</th>' +
           '</tr>' +
         '</thead>' +
         '<tbody class="divide-y divide-slate-200/80">';
 
       data.forEach(function(pp) {
         var totalItems = pp.items.length;
-        var totalPO = pp.items.filter(function(i) { return i.no_po; }).length;
-        var isComplete = totalPO === totalItems && totalItems > 0;
+        
+        var totalPO = 0;
+        var totalDitolak = 0;
+        
+        // Cek pakai fungsi logika yang sama dengan kartu dashboard
+        pp.items.forEach(function(i) {
+          var category = getItemCategory(i);
+          if (category === 'SUDAH_PO') totalPO++;
+          if (category === 'DITOLAK') totalDitolak++;
+        });
+
+        // Dianggap 'Selesai/Complete' jika seluruh barang dalam PP tersebut sudah di-PO atau Ditolak.
+        var isComplete = (totalPO + totalDitolak === totalItems) && (totalItems > 0);
 
         var itemsHtml = '';
         pp.items.forEach(function(itm) {
@@ -512,7 +613,7 @@
           '<td class="py-3.5 px-4">' +
             '<span class="px-3 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1.5 ' + (isComplete ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200') + '">' +
               '<span class="w-1.5 h-1.5 rounded-full ' + (isComplete ? 'bg-emerald-600' : 'bg-amber-600') + '"></span>' +
-              totalPO + ' / ' + totalItems + ' PO Ready' +
+              (totalPO + totalDitolak) + ' / ' + totalItems + ' Selesai' +
             '</span>' +
           '</td>' +
         '</tr>' +
@@ -688,7 +789,7 @@
         lastSyncedAt = new Date().toISOString();
         localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
         updateStatusFilterOptions();
-        renderData();
+        renderData(); // Otomatis sync semua angka di tabel & kartu
         setSyncStatus('Data berhasil dimuat dari Google Sheets.');
         showNotification('Data berhasil dimuat dari Google Sheets!', 'success');
         return true;
