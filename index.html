@@ -134,8 +134,8 @@
       </div>
     </header>
 
-    <!-- Ringkasan Statistik (KPI Cards) - Diubah menjadi 6 Grid -->
-    <section class="grid grid-cols-2 lg:grid-cols-3 gap-4" aria-label="Ringkasan pengadaan">
+    <!-- Ringkasan Statistik (KPI Cards) - Dipecah menjadi 7 Kartu -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Ringkasan pengadaan">
       
       <!-- Card 1: Total Dokumen PP -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
@@ -175,26 +175,45 @@
         </div>
       </div>
 
-      <!-- Card 3: PO Ready / Proses PO -->
+      <!-- Card 3: Sudah Datang -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-emerald-900">
           <i data-lucide="check-circle-2" class="w-24 h-24"></i>
         </div>
         <div class="flex justify-between items-start mb-3">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">PO Ready / Datang</span>
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Sudah Datang</span>
           <div class="p-2 bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-600">
             <i data-lucide="check-circle-2" class="w-5 h-5"></i>
           </div>
         </div>
         <div class="flex flex-col">
-          <span id="statPO" class="text-3xl lg:text-4xl font-black text-emerald-600 leading-none">0</span>
+          <span id="statSudahDatang" class="text-3xl lg:text-4xl font-black text-emerald-600 leading-none">0</span>
           <span class="text-[11px] text-emerald-700 font-semibold mt-2 flex items-center gap-1">
-            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Telah Diproses Purchasing
+            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Barang Telah Diterima
           </span>
         </div>
       </div>
 
-      <!-- Card 4: Belum PO -->
+      <!-- Card 4: Tunggu Kedatangan -->
+      <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-cyan-900">
+          <i data-lucide="truck" class="w-24 h-24"></i>
+        </div>
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tunggu Kedatangan</span>
+          <div class="p-2 bg-cyan-50 rounded-xl border border-cyan-100 text-cyan-600">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <span id="statTungguKedatangan" class="text-3xl lg:text-4xl font-black text-cyan-600 leading-none">0</span>
+          <span class="text-[11px] text-cyan-700 font-semibold mt-2 flex items-center gap-1">
+            <i data-lucide="clock" class="w-3.5 h-3.5"></i> Proses Pengiriman Vendor
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 5: Belum PO -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-amber-900">
           <i data-lucide="shopping-cart" class="w-24 h-24"></i>
@@ -208,12 +227,12 @@
         <div class="flex flex-col">
           <span id="statBelumPO" class="text-3xl lg:text-4xl font-black text-amber-600 leading-none">0</span>
           <span class="text-[11px] text-amber-700 font-semibold mt-2 flex items-center gap-1">
-            <i data-lucide="clock" class="w-3.5 h-3.5"></i> Menunggu Pembuatan PO
+            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Menunggu Pembuatan PO
           </span>
         </div>
       </div>
 
-      <!-- Card 5: Belum Jadi PR -->
+      <!-- Card 6: Belum Jadi PR -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-slate-900">
           <i data-lucide="file-minus" class="w-24 h-24"></i>
@@ -232,7 +251,7 @@
         </div>
       </div>
 
-      <!-- Card 6: Ditolak -->
+      <!-- Card 7: Ditolak -->
       <div class="stat-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute -right-2 -bottom-2 opacity-5 pointer-events-none text-rose-900">
           <i data-lucide="ban" class="w-24 h-24"></i>
@@ -382,36 +401,35 @@
     }
 
     // =====================================================================
-    // CORE LOGIC: Fungsi Terpusat Pembacaan Kategori Status (Anti Bug)
+    // LOGIKA PEMISAHAN KATEGORI STATUS MANUAL
     // =====================================================================
     function getItemCategory(itm) {
       var st = String(itm.status || '').toUpperCase().trim();
       
-      // 1. Prioritaskan teks/keterangan manual yang Anda ketik
       if (st.indexOf('DITOLAK') !== -1 || st.indexOf('BATAL') !== -1) return 'DITOLAK';
       if (st.indexOf('BELUM JADI PR') !== -1 || st.indexOf('BELUM PR') !== -1) return 'BELUM_PR';
       if (st.indexOf('BELUM PO') !== -1) return 'BELUM_PO';
-      if (st.indexOf('SUDAH DATANG') !== -1 || st.indexOf('TUNGGU KEDATANGAN') !== -1 || st.indexOf('SUDAH PO') !== -1) return 'SUDAH_PO';
+      if (st.indexOf('SUDAH DATANG') !== -1) return 'SUDAH_DATANG';
+      if (st.indexOf('TUNGGU KEDATANGAN') !== -1) return 'TUNGGU_KEDATANGAN';
       
-      // 2. Jika teks status KOSONG, lakukan Fallback ke kolom Nomor
+      // Fallback jika status tidak terisi spesifik
       var po = String(itm.no_po || '').toUpperCase().trim();
       var pr = String(itm.no_pr || '').toUpperCase().trim();
-      
-      // Daftar karakter kosong/palsu yang sering masuk dari Sheets
       var invalidData = ['', '-', '.', '0', 'N/A', 'TBA', 'BELUM', 'KOSONG', 'FALSE'];
       
       if (invalidData.indexOf(po) === -1) {
-         return 'SUDAH_PO'; // Kolom PO terisi nomor/huruf valid
+         return 'SUDAH_DATANG'; // Dianggap default selesai jika PO ada
       } else if (invalidData.indexOf(pr) === -1) {
-         return 'BELUM_PO'; // Kolom PO kosong, tapi PR terisi
+         return 'BELUM_PO';
       } else {
-         return 'BELUM_PR'; // Keduanya kosong
+         return 'BELUM_PR';
       }
     }
 
     function updateStats() {
       var allItems = 0;
-      var statSudahPO = 0;
+      var statSudahDatang = 0;
+      var statTungguKedatangan = 0;
       var statBelumPO = 0;
       var statBelumPR = 0;
       var statDitolak = 0;
@@ -426,15 +444,17 @@
           if (category === 'DITOLAK') statDitolak++;
           else if (category === 'BELUM_PR') statBelumPR++;
           else if (category === 'BELUM_PO') statBelumPO++;
-          else if (category === 'SUDAH_PO') statSudahPO++;
+          else if (category === 'SUDAH_DATANG') statSudahDatang++;
+          else if (category === 'TUNGGU_KEDATANGAN') statTungguKedatangan++;
         });
       });
 
-      // Update Angka di DOM Dashboard
+      // Update Angka pada Kartu Dashboard
       document.getElementById('statPP').textContent = ppData.length;
       document.getElementById('statItems').textContent = allItems;
-      document.getElementById('statPO').textContent = statSudahPO;
       
+      if(document.getElementById('statSudahDatang')) document.getElementById('statSudahDatang').textContent = statSudahDatang;
+      if(document.getElementById('statTungguKedatangan')) document.getElementById('statTungguKedatangan').textContent = statTungguKedatangan;
       if(document.getElementById('statBelumPO')) document.getElementById('statBelumPO').textContent = statBelumPO;
       if(document.getElementById('statBelumPR')) document.getElementById('statBelumPR').textContent = statBelumPR;
       if(document.getElementById('statDitolak')) document.getElementById('statDitolak').textContent = statDitolak;
@@ -481,10 +501,10 @@
       
       var upper = st.toUpperCase();
       
-      if (upper.indexOf('SUDAH DATANG') !== -1 || upper.indexOf('SELESAI') !== -1 || upper.indexOf('SUDAH PO') !== -1) {
+      if (upper.indexOf('SUDAH DATANG') !== -1 || upper.indexOf('SELESAI') !== -1) {
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/80 inline-flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
-      } else if (upper.indexOf('TUNGGU KEDATANGAN') !== -1 || upper.indexOf('PROSES') !== -1) {
-        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200/80 inline-flex items-center gap-1"><i data-lucide="truck" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
+      } else if (upper.indexOf('TUNGGU KEDATANGAN') !== -1) {
+        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-cyan-100 text-cyan-800 border border-cyan-200/80 inline-flex items-center gap-1"><i data-lucide="truck" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
       } else if (upper.indexOf('BELUM PO') !== -1) {
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200/80 inline-flex items-center gap-1"><i data-lucide="shopping-cart" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
       } else if (upper.indexOf('BELUM JADI PR') !== -1 || upper.indexOf('BELUM PR') !== -1) {
@@ -502,7 +522,7 @@
       var query = document.getElementById('searchInput').value.toLowerCase().trim();
       var statusFilterEl = document.getElementById('statusFilter');
       var statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
-      updateStats(); // Sinkronisasi angka kartu dashboard setiap kali render
+      updateStats();
 
       var filtered = ppData.filter(function(pp) {
         var items = Array.isArray(pp.items) ? pp.items : [];
@@ -568,18 +588,13 @@
       data.forEach(function(pp) {
         var totalItems = pp.items.length;
         
-        var totalPO = 0;
-        var totalDitolak = 0;
-        
-        // Cek pakai fungsi logika yang sama dengan kartu dashboard
+        var totalSelesai = 0;
         pp.items.forEach(function(i) {
-          var category = getItemCategory(i);
-          if (category === 'SUDAH_PO') totalPO++;
-          if (category === 'DITOLAK') totalDitolak++;
+          var cat = getItemCategory(i);
+          if (cat === 'SUDAH_DATANG' || cat === 'DITOLAK') totalSelesai++;
         });
 
-        // Dianggap 'Selesai/Complete' jika seluruh barang dalam PP tersebut sudah di-PO atau Ditolak.
-        var isComplete = (totalPO + totalDitolak === totalItems) && (totalItems > 0);
+        var isComplete = (totalSelesai === totalItems) && (totalItems > 0);
 
         var itemsHtml = '';
         pp.items.forEach(function(itm) {
@@ -613,7 +628,7 @@
           '<td class="py-3.5 px-4">' +
             '<span class="px-3 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1.5 ' + (isComplete ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200') + '">' +
               '<span class="w-1.5 h-1.5 rounded-full ' + (isComplete ? 'bg-emerald-600' : 'bg-amber-600') + '"></span>' +
-              (totalPO + totalDitolak) + ' / ' + totalItems + ' Selesai' +
+              totalSelesai + ' / ' + totalItems + ' Selesai' +
             '</span>' +
           '</td>' +
         '</tr>' +
@@ -789,7 +804,7 @@
         lastSyncedAt = new Date().toISOString();
         localStorage.setItem('rekap_pp_last_sync', lastSyncedAt);
         updateStatusFilterOptions();
-        renderData(); // Otomatis sync semua angka di tabel & kartu
+        renderData();
         setSyncStatus('Data berhasil dimuat dari Google Sheets.');
         showNotification('Data berhasil dimuat dari Google Sheets!', 'success');
         return true;
