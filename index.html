@@ -127,8 +127,6 @@
           <span>Cetak</span>
         </button>
 
-        <!-- Tombol API Sheets Telah Dihapus -->
-
         <button onclick="fetchFromSheets()" class="btn-bounce flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition">
           <i data-lucide="refresh-cw" class="w-4 h-4 text-white" id="refresh-icon"></i>
           <span>Sync Data</span>
@@ -260,14 +258,12 @@
 
   </div>
 
-  <!-- Modal Konfigurasi API Google Sheets Telah Dihapus -->
-
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
 
   <script>
     // MASUKKAN URL GOOGLE SHEETS API ANDA DI SINI
-    var scriptUrl = 'https://script.google.com/macros/s/AKfycbw6sBj-fTwiUgujizXeerMQUMEAa3EdDj4XhMME7dZ10EmUwP6IbCrcQMT0OomqNkbg1A/exec';
+    var scriptUrl = 'https://script.google.com/macros/s/GANTI_DENGAN_URL_ANDA_DI_SINI/exec';
     
     var ppData = [];
     var currentViewMode = 'grouped'; 
@@ -358,7 +354,6 @@
       updateStats();
       setSyncStatus(scriptUrl ? 'Siap melakukan sinkronisasi.' : 'Google Sheets API belum dikonfigurasi.');
 
-      // Karena URL sudah tertanam (hardcoded), langsung panggil sinkronisasi
       if (scriptUrl && scriptUrl.includes('script.google.com')) {
         fetchFromSheets();
       } else {
@@ -388,22 +383,25 @@
       renderData();
     }
 
+    /* ==== FUNGSI STATUS YANG SUDAH DIPERBARUI ==== */
     function getStatusBadge(status) {
       var st = (status || '-').trim();
       if (!st || st === '-') return '<span class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">-</span>';
       
-      var lower = st.toLowerCase();
-      if (lower.indexOf('complete') !== -1 || lower.indexOf('selesai') !== -1 || lower.indexOf('received') !== -1) {
-        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/80 inline-flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
-      } else if (lower.indexOf('partial') !== -1 || lower.indexOf('parsial') !== -1) {
-        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-cyan-100 text-cyan-800 border border-cyan-200/80 inline-flex items-center gap-1"><i data-lucide="pie-chart" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
-      } else if (lower.indexOf('po') !== -1) {
-        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200/80 inline-flex items-center gap-1"><i data-lucide="shopping-cart" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
-      } else if (lower.indexOf('pr') !== -1) {
-        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200/80 inline-flex items-center gap-1"><i data-lucide="file-text" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
-      } else if (lower.indexOf('pending') !== -1 || lower.indexOf('menunggu') !== -1) {
-        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200/80 inline-flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
+      var upper = st.toUpperCase();
+      
+      if (upper.indexOf('SUDAH DATANG') !== -1) {
+        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/80 inline-flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
+      } else if (upper.indexOf('TUNGGU KEDATANGAN') !== -1) {
+        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200/80 inline-flex items-center gap-1"><i data-lucide="truck" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
+      } else if (upper.indexOf('BELUM PO') !== -1) {
+        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200/80 inline-flex items-center gap-1"><i data-lucide="shopping-cart" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
+      } else if (upper.indexOf('BELUM JADI PR') !== -1) {
+        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-200 text-slate-700 border border-slate-300 inline-flex items-center gap-1"><i data-lucide="file-minus" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
+      } else if (upper.indexOf('DITOLAK') !== -1) {
+        return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200/80 inline-flex items-center gap-1"><i data-lucide="ban" class="w-3 h-3"></i>' + escapeHTML(st) + '</span>';
       } else {
+        // Fallback jika ada status lain
         return '<span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">' + escapeHTML(st) + '</span>';
       }
     }
